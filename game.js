@@ -107,6 +107,7 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
         this.materials.particle = { shader: phong, ambient: 0.8, diffusivity: 0.4,  specularity: 0.1, color: color(1, 0, 0, 1) };
         this.materials.spring = { shader: phong, ambient: 0.6, diffusivity: 0.4,  specularity: 0.1, color: color(0.5, 0.5, 0.5, 1) };
+        this.materials.grass = { shader: phong, ambient: 0.6, diffusivity: 0.5, specularity: 0.0, color: color(.9,.5,.9,1) };
 
         this.ball_location = vec3(1, 1, 1);
         this.ball_radius = 0.25;
@@ -120,6 +121,9 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         this.dt = 0.01;
         this.integration = "euler";
         this.running = false;
+
+        this.grid_size = 20;
+        this.cell_size = 1;
       }
 
       render_animation( caller )
@@ -201,8 +205,8 @@ export class Part_one_spring extends Part_one_spring_base
     const t = this.t = this.uniforms.animation_time/1000;
 
     // !!! Draw ground
-    let floor_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(10, 0.01, 10));
-    this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
+    // let floor_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(10, 0.01, 10));
+    // this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
 
     // !!! Draw ball (for reference)
     let ball_transform = Mat4.translation(this.ball_location[0], this.ball_location[1], this.ball_location[2])
@@ -216,6 +220,20 @@ export class Part_one_spring extends Part_one_spring_base
     let dt = 1/60; // use fixed timestep for more stable simulation, can be tweaked
     dt = Math.min(dt, 1/60);
 
+    // Playing field:
+    for (let row = 0; row < this.grid_size; row++) {
+      for (let col = 0; col < this.grid_size; col++) {
+        const x = -((this.grid_size * this.cell_size) / 2) + col * this.cell_size + this.cell_size / 2;
+        const z = -((this.grid_size * this.cell_size) / 2) + row * this.cell_size + this.cell_size / 2;
+        let cell_color = color(0.2, 0.67, 0.3, 1);
+        if ((row + col) % 2 == 0)
+          cell_color = color(0.15, 0.75, 0.3, 1);
+        let cell = Mat4.translation(x, 0, z).times(Mat4.scale(this.cell_size / 2, 0.01, this.cell_size / 2));
+        this.shapes.box.draw(caller, this.uniforms, cell, { ...this.materials.grass, color: cell_color });
+      }
+    }
+
+    // Snake:
     if (this.running) {
       if (this.t_sim === undefined) this.t_sim = 0;
       const t_next = this.t_sim + dt;
