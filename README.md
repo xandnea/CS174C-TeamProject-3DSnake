@@ -5,7 +5,7 @@
 
 ## Feature Checklist (Animation Algorithms)
 
-### Particle System & Simulation [7 Points]
+### ...
 * **...**: Implemented ... (Lines - )
 
 ## Usage

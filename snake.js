@@ -1,0 +1,224 @@
+class Particle {
+  constructor(pos, vel, mass) { // pos and vel are vec3
+    this.pos = pos;
+    this.vel = vel;
+    this.mass = mass;
+    this.f = vec3(0, 0, 0);
+    this.prev_pos = pos;
+  }
+
+  set_mass(new_mass) {
+    this.mass = new_mass;
+  }
+
+  set_pos(new_pos) {
+    this.pos = new_pos;
+  }
+
+  set_vel(new_vel) {
+    this.vel = new_vel;
+  }
+
+  apply_force(force_vec) {
+    this.f = this.f.plus(force_vec);
+  }
+}
+
+class Spring {
+  constructor(p1_index = 0, p2_index = 0, rest_length = 0, stiffness = 0, damping = 0) {
+    this.p1_i = p1_index;
+    this.p2_i = p2_index;
+    this.L = rest_length;
+    this.Ks = stiffness;
+    this.Kd = damping;
+  }
+
+  set(p1_index, p2_index, Ks, Kd, length) {
+    this.p1_i = p1_index;
+    this.p2_i = p2_index;
+    this.Ks = Ks;
+    this.Kd = Kd;
+    this.L = length;
+  } 
+
+  update(particles) { // spring/damping forces calculation
+    const p1 = particles[this.p1_i];
+    const p2 = particles[this.p2_i];
+
+    // calculate vector diff
+    const delta = (p2.pos).minus(p1.pos);
+    const dist = delta.norm();
+    if (dist < 1e-6) return; // avoid division by zero
+    const dir = delta.normalized();
+
+    // spring forces (hooke's law) ==> F_s = -k_s*(dist_p - L_s)*direction
+    const fs = dir.times(-this.Ks * (dist - this.L));
+
+    // damping force ==> F_d = -k_d*(velocity_vec dot normalized dist_p)*direction
+    const rel_v = (p2.vel).minus(p1.vel);
+    const fd = dir.times(-this.Kd * rel_v.dot(dir));
+
+    // apply forces
+    const total_f = fs.plus(fd);
+    p1.apply_force(total_f.times(-1));
+    p2.apply_force(total_f);
+  }
+}
+
+const Snake = class Snake {
+    constructor(length = 3, node_distance = 0.2, start_point = vec3(0, 0.5, 0), integration = "symplectic") {
+        this.length = length;
+        this.node_distance = node_distance;
+        this.particles = [];
+        this.springs = [];
+
+        // physics params
+        this.dt = 0.002
+        this.t_sim = 0;
+        this.integration = "symplectic";
+
+        for (let i = 0; i < this.length; i++) {
+            // start at the first spline point
+            const pos = start_point.plus(vec3(0, -i * node_distance, 0));
+            this.particles.push(new Particle(pos, vec3(0, 0, 0), 1));
+
+            if (i > 0) {
+                this.springs.push(new Spring(i - 1, i, node_distance, 1000, 30));
+            }
+        }
+    }
+
+    update(t, dt_frame) {
+        const forward_speed = 2.0;
+        const wave_freq = 4.0;
+        const wave_amp = 0.4;
+
+        const x = wave_amp * Math.sin(t * wave_freq);
+        const y = 0.5;
+        const z = t * forward_speed;
+        const lead_pos = vec3(x, y, z);
+
+        // derive velocity for leader 
+        const v_leader = lead_pos.minus(this.particles[0].pos).times(1 / dt_frame);
+
+        // run physics sub-steps
+        const t_next = this.t_sim + dt_frame;
+        while (this.t_sim < t_next) {
+            this.simulate(this.dt);
+            this.t_sim += this.dt;
+
+            // override leader particle's position and velocity to follow the spline
+            this.particles[0].set_pos(lead_pos);
+            this.particles[0].set_vel(v_leader);
+        }
+    }
+
+    simulate(h) {
+        // reset forces on all particles
+        for (let p of this.particles) p.f = vec3(0, 0, 0);
+
+        // accumulate forces to determine how to move particle
+        // -- gravity
+        for (let p of this.particles) p.apply_force(vec3(0, -this.gravity * p.mass, 0));
+        // -- springs
+        for (let s of this.springs) s.update(this.particles);
+        // -- ground (not used)
+        // for (let p of this.particles) {
+        //   const surface_level = 0.15; 
+        //   if (p.pos[1] < surface_level) {
+        //     const penetration = surface_level - p.pos[1];
+            
+        //     // normal spring force (pushing up)
+        //     let fy_spring = this.ground_ks * penetration;
+
+        //     // damping force (vertical and horizontal)
+        //     const floor_damping_factor = 1; // arbitrary factor to make it feel more realistic like example, can be tweaked
+        //     let fx_friction = -this.ground_kd * p.vel[0];
+        //     let fy_damping = -this.ground_kd * floor_damping_factor * p.vel[1];
+        //     let fz_friction = -this.ground_kd * p.vel[2];
+
+        //     const fx = fx_friction;
+        //     const fy = fy_spring + fy_damping;
+        //     const fz = fz_friction;
+
+        //     p.apply_force(vec3(fx, fy, fz));
+
+        //     //if particle is barely moving, apply additional damping to stop jittering on the ground like example
+        //     if (p.vel.norm() < 0.05) {
+        //         p.vel = vec3(p.vel[0] * 0.9, p.vel[1], p.vel[2] * 0.9);
+        //     }
+        //   }
+        // }
+
+        // integrate
+        for (let p of this.particles) {
+            if (p.mass <= 0) {
+                p.vel = vec3(0, 0, 0);
+                continue;
+            }
+            const accel = (p.f).times(1 / p.mass);
+
+            if (this.integration == "euler") {
+                // use current velocity to find new position 
+                // x_t+1 = x_t + v_t * h 
+                // v_t+1 = v_t + a_t * h
+                p.pos = p.pos.plus(p.vel.times(h));
+                p.vel = p.vel.plus(accel.times(h));
+            } else if (this.integration == "symplectic") {
+                // update velocity first then use new velocity to update positions
+                // v_t+1 = v_t + a_t * h
+                // x_t+1 = x_t + v_t+1 * h
+                p.vel = p.vel.plus(accel.times(h));
+                p.pos = p.pos.plus(p.vel.times(h));
+            } else if (this.integration == "verlet") {
+                // use difference between current pos and prev pos 
+                // x_t+1 = 2x_t - x_t-1 + a_t * h^2
+                const temp = p.pos;
+                p.pos = p.pos.times(2).minus(p.prev_pos).plus(accel.times(h * h));
+                p.prev_pos = temp;
+                p.vel = p.pos.minus(p.prev_pos).times(1 / h); // (x_t - x_t-1)*(1/dt)
+            }
+        }
+    }
+
+    draw(caller, uniforms, shapes, materials) {
+        // draw particles and springs
+        for (let p of this.particles) {
+        let matrix = Mat4.translation(p.pos[0], p.pos[1], p.pos[2])
+                        .times(Mat4.scale(0.75, 0.3, 0.5));
+        this.shapes.ball.draw(caller, this.uniforms, matrix, this.materials.particle);
+        }
+
+        for (let s of this.springs) {
+            const p1 = this.particles[s.p1_i].pos;
+            const p2 = this.particles[s.p2_i].pos;
+
+            const delta = p2.minus(p1);
+            const len = delta.norm();
+            const center = (p1.plus(p2)).times(0.5);
+
+            if (len < 0.001) continue;
+
+            const y_axis = delta.normalized();
+            let x_axis = vec3(1, 0, 0).cross(y_axis);
+            if (x_axis.norm() < 1e-6) x_axis = vec3(0, 0, 1).cross(y_axis); // Handle vertical case
+            x_axis = x_axis.normalized();
+            const z_axis = x_axis.cross(y_axis).normalized();
+
+            const rotation = Mat4.of(
+                [x_axis[0], y_axis[0], z_axis[0], 0],
+                [x_axis[1], y_axis[1], z_axis[1], 0],
+                [x_axis[2], y_axis[2], z_axis[2], 0],
+                [0, 0, 0, 1]
+            );
+
+            let model_transform = Mat4.translation(center[0], center[1], center[2])
+                .times(rotation)
+                .times(Mat4.scale(0.02, len / 2, 0.02));
+
+            this.shapes.box.draw(caller, this.uniforms, model_transform, this.materials.spring);
+        }
+    }
+}
+
+export { Snake };
