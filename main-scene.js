@@ -29,7 +29,6 @@ import {Transforms_Sandbox_Base, Transforms_Sandbox}
     from "./examples/transforms-sandbox.js";
 
 import {Part_one_spring} from "./game.js";
-import {Part_two_chain} from "./part_two_chain.js";
 
 Object.assign (defs,
     {Minimal_Webgl_Demo},
@@ -43,12 +42,11 @@ Object.assign (defs,
     {Text_Demo},
     {Transforms_Sandbox_Base, Transforms_Sandbox},
     {Part_one_spring},
-    {Part_two_chain}
 );
 
 // ******************** SELECT THE DEMO TO DISPLAY:
 
-let scenes = {1: Part_one_spring, 2: Part_two_chain};
+let scenes = {1: Part_one_spring};
 const scene_selector = (i) => scenes[i];
 
 const main_scene        = Part_one_spring; // default
