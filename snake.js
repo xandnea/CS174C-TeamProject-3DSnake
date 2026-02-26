@@ -82,6 +82,11 @@ const Snake = class Snake {
         this.direction = vec3(0, 0, 1);
         this.speed = 2.0;
 
+        // snake params:
+        this.particle_width = 0.2;
+        this.particle_height = 0.2;
+        this.particle_length = 0.4;
+
         for (let i = 0; i < this.length; i++) {
             // start at the first spline point
             const pos = start_point.plus(vec3(0, 0, -i * node_distance));
@@ -220,7 +225,7 @@ const Snake = class Snake {
       for (let i = 0; i < this.length; i++) {
         for (let j = i+2; j < this.length; j++) {
           const dist = this.particles[j].pos.minus(this.particles[i].pos).norm();
-          if (dist < 0.4)
+          if (dist < this.particle_length)
             return true;
         }
       }
@@ -229,9 +234,6 @@ const Snake = class Snake {
     
     draw(caller, uniforms, shapes, materials) {
       // draw particles
-      const particle_width = 0.2;
-      const particle_height = 0.2;
-      const particle_length = 0.4;
       for (let i = 0; i < this.particles.length; i++) {
         const p = this.particles[i];
         let matrix = Mat4.translation(p.pos[0], p.pos[1], p.pos[2]);
@@ -263,7 +265,7 @@ const Snake = class Snake {
         );
 
         matrix = matrix.times(rotation)
-                       .times(Mat4.scale(particle_width, particle_height, particle_length));
+                       .times(Mat4.scale(this.particle_width, this.particle_height, this.particle_length));
 
         shapes.ball.draw(caller, uniforms, matrix, materials.particle);
       }
