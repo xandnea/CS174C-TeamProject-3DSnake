@@ -4,6 +4,8 @@ import {tiny, defs} from './examples/common.js';
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
 
 // TODO: you should implement the required classes here or in another file.
+import {Board} from "./board.js"
+
 class Particle {
   constructor(pos, vel, mass) { // pos and vel are vec3
     this.pos = pos;
@@ -122,8 +124,9 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         this.integration = "euler";
         this.running = false;
 
-        this.grid_size = 20;
-        this.cell_size = 1;
+        this.board = new Board(20, 1);
+        this.grid_size = this.board.grid_size;
+        this.cell_size = this.board.cell_size;
       }
 
       render_animation( caller )
@@ -221,23 +224,13 @@ export class Part_one_spring extends Part_one_spring_base
     dt = Math.min(dt, 1/60);
 
     // Playing field:
-    for (let row = 0; row < this.grid_size; row++) {
-      for (let col = 0; col < this.grid_size; col++) {
-        const x = -((this.grid_size * this.cell_size) / 2) + col * this.cell_size + this.cell_size / 2;
-        const z = -((this.grid_size * this.cell_size) / 2) + row * this.cell_size + this.cell_size / 2;
-        let cell_color = color(0.2, 0.67, 0.3, 1);
-        if ((row + col) % 2 == 0)
-          cell_color = color(0.15, 0.75, 0.3, 1);
-        let cell = Mat4.translation(x, 0, z).times(Mat4.scale(this.cell_size / 2, 0.01, this.cell_size / 2));
-        this.shapes.box.draw(caller, this.uniforms, cell, { ...this.materials.grass, color: cell_color });
-      }
-    }
+    this.board.draw(caller, this.uniforms, this.shapes, this.materials);
 
     // Snake:
     if (this.running) {
       if (this.t_sim === undefined) this.t_sim = 0;
       const t_next = this.t_sim + dt;
-
+ 
       const t_step = this.dt;
 
       this.accumulator += dt;
