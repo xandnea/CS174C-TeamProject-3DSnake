@@ -5,6 +5,7 @@ const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } =
 
 // TODO: you should implement the required classes here or in another file.
 import {Board} from "./board.js"
+import { Collectible } from './collect.js';
 
 class Particle {
   constructor(pos, vel, mass) { // pos and vel are vec3
@@ -110,6 +111,7 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         this.materials.particle = { shader: phong, ambient: 0.8, diffusivity: 0.4,  specularity: 0.1, color: color(0, 0, 1, 1) };
         this.materials.spring = { shader: phong, ambient: 0.6, diffusivity: 0.4,  specularity: 0.1, color: color(0.5, 0.5, 0.5, 1) };
         this.materials.grass = { shader: phong, ambient: 0.6, diffusivity: 0.5, specularity: 0.0, color: color(.9,.5,.9,1) };
+        this.materials.collect = { shader: phong, ambient: 0.8, diffusivity: 0.4, specularity: 0.0, color: color(0.78, 0.31, 0.26, 1)}; // TODO definitely change this
 
         this.ball_location = vec3(1, 1, 1);
         this.ball_radius = 0.25;
@@ -127,6 +129,10 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         this.board = new Board(20, 1);
         this.grid_size = this.board.grid_size;
         this.cell_size = this.board.cell_size;
+
+        this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3);
+        // Current default setup has 3 collectibles on screen at once
+        // Also I picked the radius at random
 
         this.game_over = false;
         // Spawn head at the same place the animation wants at t=0
@@ -247,10 +253,12 @@ export class Part_one_spring extends Part_one_spring_base
     if (!this.game_over) {
       this.snake.update(t, dt);  // optional animation (sine forward motion)
       const head_pos = this.snake.particles[0].pos;
+      this.collectibles.update(t, head_pos);
       if (this.board.checkBorderCollision(head_pos))
         this.game_over = true;
     }
     this.snake.draw(caller, this.uniforms, this.shapes, this.materials);
+    this.collectibles.draw(caller, this.uniforms, this.shapes, this.materials);
     
     /*if (this.running) {
       if (this.t_sim === undefined) this.t_sim = 0;

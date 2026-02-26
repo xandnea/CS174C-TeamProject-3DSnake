@@ -2,19 +2,22 @@ import { tiny, defs } from './examples/common.js';
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
 
 export const Collectible = class Collectible {
-    constructor(r, bound) {
+    constructor(r, x_bound, z_bound, n) {
         this.instances = []; // Collectible instances stored as vec3's
         this.r = r;
         this.size = r ** 2; // Store radius squared to reduce computation in update()
         this.score = 0;
-        this.bounds = bound; // Grid boundary in form [x_lower, x_upper, z_lower, z_higher]
+        this.x_bounds = x_bound; // Grid boundary in form [x_lower, x_upper]
+        this.z_bounds = z_bound;
+
+        this.spawn(n);
     }
 
     spawn(n) { // Spawns n collectibles. No checks to prevent spawning inside snake
         for (let i = 0; i < n; i++) {
-            const x = Math.floor(Math.random() * (this.bounds[1] - this.bounds[0])) + this.bounds[0];
-            const z = Math.floor(Math.random() * (this.bounds[3] - this.bounds[2])) + this.bounds[2];
-            this.instances.push(vec3(x, this.r + 1, z));
+            const x = Math.floor(Math.random() * (this.x_bounds[1] - this.x_bounds[0])) + this.x_bounds[0] + 0.5;
+            const z = Math.floor(Math.random() * (this.z_bounds[1] - this.z_bounds[0])) + this.z_bounds[0] + 0.5;
+            this.instances.push(vec3(x, this.r + 0.1, z));
         }
     }
 
@@ -34,13 +37,28 @@ export const Collectible = class Collectible {
         // TODO add a simple floating animation later
     }
 
-    // TODO move this code to game.js
-    // I'm writing it here bc game.js probably needs to be cleaned up, so this avoids adding more confusing stuff
-    draw() {
-        const collect_material = null; // TODO add custom texture of some kind
+    draw(webgl_manager, uniforms, shapes, materials) {
         for (const i of this.instances) {
             const collect_transform = Mat4.translation(i[0], i[1], i[2]).times(Mat4.scale(this.r, this.r, this.r));
-            this.shapes.ball.draw(caller, this.uniforms, collect_transform, collect_material);
+            shapes.ball.draw(webgl_manager, uniforms, collect_transform, { ...materials.collect, color: color(0.78, 0.31, 0.26, 1)});
         }
+        // TODO Add scoreboard display of some kind
     }
 }
+
+/* 
+== Notes for particle logic ==
+May need to write extra class with function that collectible calls
+No sprites in tinygraphics, need to represent particles with small 3D shapes (annoying!)
+
+When triggered, generate ~30 random angles, shoot small orbs on trajectories from those angles
+Orb upward angle is fixed, only angle on XZ plane varies
+Blend of random() and pre determined angles to combine random appearance with nice distribution?
+Orbs follow simple kinematics x(t) = x(0) + dt * v(t) + dt ** 2 * 0.5 * a
+Track lifetime of orbs -- should there be some randomness?
+
+==> Copy code directly from 174A project and modify for tinygraphics, probably
+
+Concerned about efficiency running calculations for several dozen additional geometries every frame
+Don't want to cause lag spike
+*/
