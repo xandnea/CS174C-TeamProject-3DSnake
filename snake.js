@@ -6,19 +6,19 @@ class Particle {
     this.vel = vel;
     this.mass = mass;
     this.f = vec3(0, 0, 0);
-    this.prev_pos = pos;
+    this.prev_pos = pos.copy();
   }
 
   set_mass(new_mass) {
     this.mass = new_mass;
   }
 
-  set_pos(new_pos) {
-    this.pos = new_pos;
+  set_pos(new_pos) { 
+    this.pos = new_pos.copy(); 
   }
 
   set_vel(new_vel) {
-    this.vel = new_vel;
+    this.vel = new_vel.copy();
   }
 
   apply_force(force_vec) {
@@ -92,28 +92,48 @@ const Snake = class Snake {
     }
 
     update(t, dt_frame) {
-        const forward_speed = 2.0;
-        const wave_freq = 4.0;
-        const wave_amp = 0.4;
-
-        const x = wave_amp * Math.sin(t * wave_freq);
-        const y = 0.5;
-        const z = -8 + ((t * forward_speed) % 16);
-        const lead_pos = vec3(x, y, z);
-
-        // derive velocity for leader 
-        const v_leader = lead_pos.minus(this.particles[0].pos).times(1 / dt_frame);
-
-        // run physics sub-steps
-        const t_next = this.t_sim + dt_frame;
-        while (this.t_sim < t_next) {
-            this.simulate(this.dt);
-            this.t_sim += this.dt;
-
-            // override leader particle's position and velocity to follow the spline
-            this.particles[0].set_pos(lead_pos);
-            this.particles[0].set_vel(v_leader);
+      const forward_speed = 2.0;
+      const wave_freq = 4.0;
+      const wave_amp = 0.4;
+    
+      const inv_dt = 1 / Math.max(dt_frame, 1e-6);
+    
+      // Save old positions (COPIES) so velocity is correct
+      const old_pos = this.particles.map(p => p.pos.copy());
+    
+      // Head target
+      const x = wave_amp * Math.sin(t * wave_freq);
+      const y = 0.5;
+      const z = -8 + ((t * forward_speed) % 16);
+      const lead_pos = vec3(x, y, z);
+    
+      // Move head (kinematic)
+      this.particles[0].set_pos(lead_pos);
+      this.particles[0].set_vel(lead_pos.minus(old_pos[0]).times(inv_dt));
+    
+      // Keep each segment exactly node_distance away from the previous one
+      for (let i = 1; i < this.length; i++) {
+        const prev = this.particles[i - 1].pos;   // new position of previous segment
+        const cur_old = old_pos[i];               // old position of this segment (for direction + vel)
+    
+        // direction from prev -> this segment (based on last frame)
+        let delta = this.particles[i].pos.minus(prev);
+        let dist = delta.norm();
+    
+        let dir;
+        if (dist < 1e-6) {
+          // fallback direction if stacked
+          dir = vec3(0, 0, -1);
+        } else {
+          dir = delta.times(1 / dist); // normalized
         }
+    
+        // Put segment i node_distance away from prev, along dir
+        const target = prev.plus(dir.times(this.node_distance));
+    
+        this.particles[i].set_pos(target);
+        this.particles[i].set_vel(target.minus(cur_old).times(inv_dt));
+      }
     }
 
     simulate(h) {
@@ -188,7 +208,7 @@ const Snake = class Snake {
       // draw particles
       for (let p of this.particles) {
         const matrix = Mat4.translation(p.pos[0], p.pos[1], p.pos[2])
-          .times(Mat4.scale(0.25, 0.25, 0.25))
+          .times(Mat4.scale(0.12, 0.12, 0.12));
         shapes.ball.draw(caller, uniforms, matrix, materials.particle);
       }
     
