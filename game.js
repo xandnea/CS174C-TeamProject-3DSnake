@@ -1,5 +1,5 @@
 import {tiny, defs} from './examples/common.js';
-
+import { Snake } from "./snake.js";
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
 
@@ -127,6 +127,7 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         this.board = new Board(20, 1);
         this.grid_size = this.board.grid_size;
         this.cell_size = this.board.cell_size;
+        this.snake = new Snake(12, 0.6, vec3(0, 0.25, 0));
       }
 
       render_animation( caller )
@@ -223,11 +224,15 @@ export class Part_one_spring extends Part_one_spring_base
     let dt = 1/60; // use fixed timestep for more stable simulation, can be tweaked
     dt = Math.min(dt, 1/60);
 
+
     // Playing field:
     this.board.draw(caller, this.uniforms, this.shapes, this.materials);
 
     // Snake:
-    if (this.running) {
+    this.snake.update(t, dt);  // optional animation (sine forward motion)
+    this.snake.draw(caller, this.uniforms, this.shapes, this.materials);
+    
+    /*if (this.running) {
       if (this.t_sim === undefined) this.t_sim = 0;
       const t_next = this.t_sim + dt;
  
@@ -240,16 +245,16 @@ export class Part_one_spring extends Part_one_spring_base
         this.t_sim += this.dt;
         this.accumulator -= this.dt;
       }
-    }
+    }*/
     
     // DRAW
-    for (let p of this.particles) {
+    /*for (let p of this.particles) {
       let matrix = Mat4.translation(p.pos[0], p.pos[1], p.pos[2])
                        .times(Mat4.scale(0.1, 0.1, 0.1));
       this.shapes.ball.draw(caller, this.uniforms, matrix, this.materials.particle);
-    }
+    }*/
 
-    for (let s of this.springs) {
+    /*r (let s of this.springs) {
       const p1 = this.particles[s.p1_i].pos;
       const p2 = this.particles[s.p2_i].pos;
 
@@ -278,7 +283,7 @@ export class Part_one_spring extends Part_one_spring_base
           .times(Mat4.scale(0.02, len / 2, 0.02));
 
       this.shapes.box.draw(caller, this.uniforms, model_transform, this.materials.spring);
-    }
+    }*/
   }
 
   // dedicated function for physics simulation

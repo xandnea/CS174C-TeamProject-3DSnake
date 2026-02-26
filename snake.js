@@ -1,3 +1,5 @@
+import { tiny } from "./examples/common.js";
+const { vec3, Mat4 } = tiny;
 class Particle {
   constructor(pos, vel, mass) { // pos and vel are vec3
     this.pos = pos;
@@ -76,10 +78,11 @@ const Snake = class Snake {
         this.dt = 0.002
         this.t_sim = 0;
         this.integration = "symplectic";
+        this.gravity = 0; 
 
         for (let i = 0; i < this.length; i++) {
             // start at the first spline point
-            const pos = start_point.plus(vec3(0, -i * node_distance, 0));
+            const pos = start_point.plus(vec3(0, 0, -i * node_distance));
             this.particles.push(new Particle(pos, vec3(0, 0, 0), 1));
 
             if (i > 0) {
@@ -95,7 +98,7 @@ const Snake = class Snake {
 
         const x = wave_amp * Math.sin(t * wave_freq);
         const y = 0.5;
-        const z = t * forward_speed;
+        const z = -8 + ((t * forward_speed) % 16);
         const lead_pos = vec3(x, y, z);
 
         // derive velocity for leader 
@@ -182,42 +185,43 @@ const Snake = class Snake {
     }
 
     draw(caller, uniforms, shapes, materials) {
-        // draw particles and springs
-        for (let p of this.particles) {
-        let matrix = Mat4.translation(p.pos[0], p.pos[1], p.pos[2])
-                        .times(Mat4.scale(0.75, 0.3, 0.5));
-        this.shapes.ball.draw(caller, this.uniforms, matrix, this.materials.particle);
-        }
-
-        for (let s of this.springs) {
-            const p1 = this.particles[s.p1_i].pos;
-            const p2 = this.particles[s.p2_i].pos;
-
-            const delta = p2.minus(p1);
-            const len = delta.norm();
-            const center = (p1.plus(p2)).times(0.5);
-
-            if (len < 0.001) continue;
-
-            const y_axis = delta.normalized();
-            let x_axis = vec3(1, 0, 0).cross(y_axis);
-            if (x_axis.norm() < 1e-6) x_axis = vec3(0, 0, 1).cross(y_axis); // Handle vertical case
-            x_axis = x_axis.normalized();
-            const z_axis = x_axis.cross(y_axis).normalized();
-
-            const rotation = Mat4.of(
-                [x_axis[0], y_axis[0], z_axis[0], 0],
-                [x_axis[1], y_axis[1], z_axis[1], 0],
-                [x_axis[2], y_axis[2], z_axis[2], 0],
-                [0, 0, 0, 1]
-            );
-
-            let model_transform = Mat4.translation(center[0], center[1], center[2])
-                .times(rotation)
-                .times(Mat4.scale(0.02, len / 2, 0.02));
-
-            this.shapes.box.draw(caller, this.uniforms, model_transform, this.materials.spring);
-        }
+      // draw particles
+      for (let p of this.particles) {
+        const matrix = Mat4.translation(p.pos[0], p.pos[1], p.pos[2])
+          .times(Mat4.scale(0.25, 0.25, 0.25))
+        shapes.ball.draw(caller, uniforms, matrix, materials.particle);
+      }
+    
+      // draw springs
+      for (let s of this.springs) {
+        const p1 = this.particles[s.p1_i].pos;
+        const p2 = this.particles[s.p2_i].pos;
+    
+        const delta = p2.minus(p1);
+        const len = delta.norm();
+        if (len < 1e-4) continue;
+    
+        const center = p1.plus(p2).times(0.5);
+    
+        const y_axis = delta.normalized();
+        let x_axis = vec3(1, 0, 0).cross(y_axis);
+        if (x_axis.norm() < 1e-6) x_axis = vec3(0, 0, 1).cross(y_axis);
+        x_axis = x_axis.normalized();
+        const z_axis = x_axis.cross(y_axis).normalized();
+    
+        const rotation = Mat4.of(
+          [x_axis[0], y_axis[0], z_axis[0], 0],
+          [x_axis[1], y_axis[1], z_axis[1], 0],
+          [x_axis[2], y_axis[2], z_axis[2], 0],
+          [0, 0, 0, 1]
+        );
+    
+        const model = Mat4.translation(center[0], center[1], center[2])
+          .times(rotation)
+          .times(Mat4.scale(0.03, len / 2, 0.03));
+    
+        shapes.box.draw(caller, uniforms, model, materials.spring);
+      }
     }
 }
 
