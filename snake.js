@@ -79,6 +79,8 @@ const Snake = class Snake {
         this.t_sim = 0;
         this.integration = "symplectic";
         this.gravity = 0; 
+        this.direction = vec3(0, 0, 1);
+        this.speed = 2.0;
 
         for (let i = 0; i < this.length; i++) {
             // start at the first spline point
@@ -92,20 +94,23 @@ const Snake = class Snake {
     }
 
     update(t, dt_frame) {
-      const forward_speed = 2.0;
-      const wave_freq = 4.0;
-      const wave_amp = 0.4;
+      // const forward_speed = 2.0;
+      const wave_freq = 3.0;
+      const wave_amp = 0.02;
     
       const inv_dt = 1 / Math.max(dt_frame, 1e-6);
     
       // Save old positions (COPIES) so velocity is correct
       const old_pos = this.particles.map(p => p.pos.copy());
-    
+      
       // Head target
-      const x = wave_amp * Math.sin(t * wave_freq);
-      const y = 0.5;
-      const z = -8 + ((t * forward_speed) % 16);
-      const lead_pos = vec3(x, y, z);
+      // const x = wave_amp * Math.sin(t * wave_freq);
+      // const y = 0.5;
+      // const z = -8 + ((t * forward_speed) % 16);
+      // const lead_pos = vec3(x, y, z);
+      const perpendicular_dir = vec3(this.direction[2], 0, this.direction[0]);
+      const path = this.particles[0].pos.plus(this.direction.times(this.speed * dt_frame));
+      const lead_pos = path.plus(perpendicular_dir.times(wave_amp * Math.sin(t * wave_freq)));
     
       // Move head (kinematic)
       this.particles[0].set_pos(lead_pos);
@@ -133,6 +138,13 @@ const Snake = class Snake {
     
         this.particles[i].set_pos(target);
         this.particles[i].set_vel(target.minus(cur_old).times(inv_dt));
+      }
+    }
+
+    set_direction(dir) {
+      const opposite = this.direction.times(-1);
+      if (dir.minus(opposite).norm() > 0.01) {
+        this.direction = dir.normalized();
       }
     }
 

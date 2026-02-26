@@ -127,6 +127,8 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         this.board = new Board(20, 1);
         this.grid_size = this.board.grid_size;
         this.cell_size = this.board.cell_size;
+
+        this.game_over = false;
         // Spawn head at the same place the animation wants at t=0
         const forward_speed = 2.0;
         const wave_freq = 4.0;
@@ -233,7 +235,7 @@ export class Part_one_spring extends Part_one_spring_base
     // TODO: you should draw spline here.
 
     // animation_delta_time is the time since the LAST frame (usually ~16ms)
-    //let dt = this.uniforms.animation_delta_time / 1000;
+    //let dt = this.uniforms.animation_delta_time / 1000;s
     let dt = 1/60; // use fixed timestep for more stable simulation, can be tweaked
     dt = Math.min(dt, 1/60);
 
@@ -242,7 +244,12 @@ export class Part_one_spring extends Part_one_spring_base
     this.board.draw(caller, this.uniforms, this.shapes, this.materials);
 
     // Snake:
-    this.snake.update(t, dt);  // optional animation (sine forward motion)
+    if (!this.game_over) {
+      this.snake.update(t, dt);  // optional animation (sine forward motion)
+      const head_pos = this.snake.particles[0].pos;
+      if (this.board.checkBorderCollision(head_pos))
+        this.game_over = true;
+    }
     this.snake.draw(caller, this.uniforms, this.shapes, this.materials);
     
     /*if (this.running) {
@@ -376,6 +383,17 @@ export class Part_one_spring extends Part_one_spring_base
     this.key_triggered_button( "Config", ["c"], this.parse_commands );
     this.new_line();
     this.key_triggered_button( "Run", ["Shift", "R"], this.start );
+    this.new_line();
+
+    this.control_panel.innerHTML += "Snake Controls:";
+    this.new_line();
+    this.key_triggered_button("Forward", ["ArrowUp"], () => this.snake.set_direction(vec3(0, 0, -1)));
+    this.new_line();
+    this.key_triggered_button("Backward", ["ArrowDown"], () => this.snake.set_direction(vec3(0, 0, 1)));
+    this.new_line();
+    this.key_triggered_button("Left", ["ArrowLeft"], () => this.snake.set_direction(vec3(-1, 0, 0)));
+    this.new_line();
+    this.key_triggered_button("Right", ["ArrowRight"], () => this.snake.set_direction(vec3(1, 0, 0)));
     this.new_line();
 
     /* Some code for your reference
