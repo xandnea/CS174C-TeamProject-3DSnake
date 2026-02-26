@@ -127,7 +127,20 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         this.board = new Board(20, 1);
         this.grid_size = this.board.grid_size;
         this.cell_size = this.board.cell_size;
-        this.snake = new Snake(12, 0.6, vec3(0, 0.25, 0));
+        // Spawn head at the same place the animation wants at t=0
+        const forward_speed = 2.0;
+        const wave_freq = 4.0;
+        const wave_amp = 0.4;
+        const t0 = 0;
+
+        const head0 = vec3(
+          wave_amp * Math.sin(t0 * wave_freq),
+          0.25,
+          -8 + ((t0 * forward_speed) % 16)
+        );
+
+        // 5 particles, spacing 0.6
+        this.snake = new Snake(5, 0.6, head0);
       }
 
       render_animation( caller )
