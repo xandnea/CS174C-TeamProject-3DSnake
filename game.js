@@ -107,7 +107,7 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         this.materials.plastic = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) }
         this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
         this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
-        this.materials.particle = { shader: phong, ambient: 0.8, diffusivity: 0.4,  specularity: 0.1, color: color(1, 0, 0, 1) };
+        this.materials.particle = { shader: phong, ambient: 0.8, diffusivity: 0.4,  specularity: 0.1, color: color(0, 0, 1, 1) };
         this.materials.spring = { shader: phong, ambient: 0.6, diffusivity: 0.4,  specularity: 0.1, color: color(0.5, 0.5, 0.5, 1) };
         this.materials.grass = { shader: phong, ambient: 0.6, diffusivity: 0.5, specularity: 0.0, color: color(.9,.5,.9,1) };
 
@@ -142,7 +142,7 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         );
 
         // 5 particles, spacing 0.6
-        this.snake = new Snake(5, 0.6, head0);
+        this.snake = new Snake(6, 0.6, head0);
       }
 
       render_animation( caller )

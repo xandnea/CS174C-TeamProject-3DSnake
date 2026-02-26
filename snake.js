@@ -77,7 +77,7 @@ const Snake = class Snake {
         // physics params
         this.dt = 0.002
         this.t_sim = 0;
-        this.integration = "symplectic";
+        this.integration = integration;
         this.gravity = 0; 
         this.direction = vec3(0, 0, 1);
         this.speed = 2.0;
@@ -218,42 +218,75 @@ const Snake = class Snake {
 
     draw(caller, uniforms, shapes, materials) {
       // draw particles
-      for (let p of this.particles) {
-        const matrix = Mat4.translation(p.pos[0], p.pos[1], p.pos[2])
-          .times(Mat4.scale(0.12, 0.12, 0.12));
+      const particle_width = 0.2;
+      const particle_height = 0.2;
+      const particle_length = 0.4;
+      for (let i = 0; i < this.particles.length; i++) {
+        const p = this.particles[i];
+        let matrix = Mat4.translation(p.pos[0], p.pos[1], p.pos[2]);
+
+        // force each body part to look at the previous one
+        let dir;
+        if (i > 0) {
+            const delta = this.particles[i - 1].pos.minus(p.pos);
+            if (delta.norm() > 1e-6) {
+                dir = delta.normalized();
+            } else {
+                dir = vec3(0, 0, 1); // fallback if particles are overlapping
+            }
+        } else {
+            dir = this.direction.normalized();
+        }
+
+        let z_axis = dir;
+        let x_axis = vec3(0, 1, 0).cross(z_axis); 
+        if (x_axis.norm() < 1e-6) x_axis = vec3(1, 0, 0).cross(z_axis);
+        x_axis = x_axis.normalized();
+        let y_axis = z_axis.cross(x_axis).normalized();
+
+        const rotation = Mat4.of(
+            [x_axis[0], y_axis[0], z_axis[0], 0],
+            [x_axis[1], y_axis[1], z_axis[1], 0],
+            [x_axis[2], y_axis[2], z_axis[2], 0],
+            [0, 0, 0, 1]
+        );
+
+        matrix = matrix.times(rotation)
+                       .times(Mat4.scale(particle_width, particle_height, particle_length));
+
         shapes.ball.draw(caller, uniforms, matrix, materials.particle);
       }
     
-      // draw springs
-      for (let s of this.springs) {
-        const p1 = this.particles[s.p1_i].pos;
-        const p2 = this.particles[s.p2_i].pos;
+      // draw springs (not necessary since segments are connected, but can be uncommented for debugging)
+      // for (let s of this.springs) {
+      //   const p1 = this.particles[s.p1_i].pos;
+      //   const p2 = this.particles[s.p2_i].pos;
     
-        const delta = p2.minus(p1);
-        const len = delta.norm();
-        if (len < 1e-4) continue;
+      //   const delta = p2.minus(p1);
+      //   const len = delta.norm();
+      //   if (len < 1e-4) continue;
     
-        const center = p1.plus(p2).times(0.5);
+      //   const center = p1.plus(p2).times(0.5);
     
-        const y_axis = delta.normalized();
-        let x_axis = vec3(1, 0, 0).cross(y_axis);
-        if (x_axis.norm() < 1e-6) x_axis = vec3(0, 0, 1).cross(y_axis);
-        x_axis = x_axis.normalized();
-        const z_axis = x_axis.cross(y_axis).normalized();
+      //   const y_axis = delta.normalized();
+      //   let x_axis = vec3(1, 0, 0).cross(y_axis);
+      //   if (x_axis.norm() < 1e-6) x_axis = vec3(0, 0, 1).cross(y_axis);
+      //   x_axis = x_axis.normalized();
+      //   const z_axis = x_axis.cross(y_axis).normalized();
     
-        const rotation = Mat4.of(
-          [x_axis[0], y_axis[0], z_axis[0], 0],
-          [x_axis[1], y_axis[1], z_axis[1], 0],
-          [x_axis[2], y_axis[2], z_axis[2], 0],
-          [0, 0, 0, 1]
-        );
+      //   const rotation = Mat4.of(
+      //     [x_axis[0], y_axis[0], z_axis[0], 0],
+      //     [x_axis[1], y_axis[1], z_axis[1], 0],
+      //     [x_axis[2], y_axis[2], z_axis[2], 0],
+      //     [0, 0, 0, 1]
+      //   );
     
-        const model = Mat4.translation(center[0], center[1], center[2])
-          .times(rotation)
-          .times(Mat4.scale(0.03, len / 2, 0.03));
+      //   const model = Mat4.translation(center[0], center[1], center[2])
+      //     .times(rotation)
+      //     .times(Mat4.scale(0.03, len / 2, 0.03));
     
-        shapes.box.draw(caller, uniforms, model, materials.spring);
-      }
+      //   shapes.box.draw(caller, uniforms, model, materials.spring);
+      // }
     }
 }
 
