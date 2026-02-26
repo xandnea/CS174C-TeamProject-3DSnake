@@ -216,6 +216,17 @@ const Snake = class Snake {
         }
     }
 
+    checkSelfCollision() {
+      for (let i = 0; i < this.length; i++) {
+        for (let j = i+2; j < this.length; j++) {
+          const dist = this.particles[j].pos.minus(this.particles[i].pos).norm();
+          if (dist < 0.4)
+            return true;
+        }
+      }
+      return false;
+    }
+    
     draw(caller, uniforms, shapes, materials) {
       // draw particles
       const particle_width = 0.2;

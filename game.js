@@ -256,6 +256,8 @@ export class Part_one_spring extends Part_one_spring_base
       this.collectibles.update(t, head_pos);
       if (this.board.checkBorderCollision(head_pos))
         this.game_over = true;
+      if (this.snake.checkSelfCollision())
+        this.game_over = true;
     }
     this.snake.draw(caller, this.uniforms, this.shapes, this.materials);
     this.collectibles.draw(caller, this.uniforms, this.shapes, this.materials);
@@ -386,13 +388,6 @@ export class Part_one_spring extends Part_one_spring_base
   render_controls()
   {                                 // render_controls(): Sets up a panel of interactive HTML elements, including
     // buttons with key bindings for affecting this scene, and live info readouts.
-    this.control_panel.innerHTML += "Part One:";
-    this.new_line();
-    this.key_triggered_button( "Config", ["c"], this.parse_commands );
-    this.new_line();
-    this.key_triggered_button( "Run", ["Shift", "R"], this.start );
-    this.new_line();
-
     this.control_panel.innerHTML += "Snake Controls:";
     this.new_line();
     this.key_triggered_button("Forward", ["ArrowUp"], () => this.snake.set_direction(vec3(0, 0, -1)));
@@ -402,6 +397,24 @@ export class Part_one_spring extends Part_one_spring_base
     this.key_triggered_button("Left", ["ArrowLeft"], () => this.snake.set_direction(vec3(-1, 0, 0)));
     this.new_line();
     this.key_triggered_button("Right", ["ArrowRight"], () => this.snake.set_direction(vec3(1, 0, 0)));
+    this.new_line();
+    this.key_triggered_button("Reset", ["r"], function() {
+      this.game_over = false;
+      const forward_speed = 2.0;
+      const wave_freq = 4.0;
+      const wave_amp = 0.4;
+      const t0 = 0;
+
+      const head0 = vec3(
+        wave_amp * Math.sin(t0 * wave_freq),
+        0.25,
+        -8 + ((t0 * forward_speed) % 16)
+      );
+
+      // 5 particles, spacing 0.6
+      this.snake = new Snake(6, 0.6, head0);
+      this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3);
+    });
     this.new_line();
 
     /* Some code for your reference
