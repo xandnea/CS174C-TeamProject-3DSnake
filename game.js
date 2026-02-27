@@ -170,7 +170,7 @@ const Part_one_spring_base = defs.Part_one_spring_base =
           // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
 
           // !!! Camera changed here
-          Shader.assign_camera( Mat4.look_at (vec3 (10, 10, 10), vec3 (0, 0, 0), vec3 (0, 1, 0)), this.uniforms );
+          Shader.assign_camera( Mat4.look_at (vec3 (0, 25, 0), vec3 (0, 0, 0), vec3 (0, 0, -1)), this.uniforms );
         }
         this.uniforms.projection_transform = Mat4.perspective( Math.PI/4, caller.width/caller.height, 1, 100 );
 
@@ -186,7 +186,7 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         this.uniforms.lights = [ defs.Phong_Shader.light_source( light_position, color( 1,1,1,1 ), 1000000 ) ];
 
         // draw axis arrows.
-        this.shapes.axis.draw(caller, this.uniforms, Mat4.identity(), this.materials.rgb);
+        //this.shapes.axis.draw(caller, this.uniforms, Mat4.identity(), this.materials.rgb);
       }
     }
 
