@@ -135,6 +135,7 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         // Also I picked the radius at random
 
         this.game_over = false;
+        this.score = 0;
         // Spawn head at the same place the animation wants at t=0
         const forward_speed = 2.0;
         const wave_freq = 4.0;
@@ -148,7 +149,8 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         );
 
         // 5 particles, spacing 0.6
-        this.snake = new Snake(6, 0.6, head0);
+        this.starting_length = 5;
+        this.snake = new Snake(this.starting_length, 0.6, head0);
       }
 
       render_animation( caller )
@@ -248,12 +250,21 @@ export class Part_one_spring extends Part_one_spring_base
 
     // Playing field:
     this.board.draw(caller, this.uniforms, this.shapes, this.materials);
+    this.score = this.collectibles.score;
+    document.getElementById("output").value = "Score: " + this.score;
 
     // Snake:
     if (!this.game_over) {
       this.snake.update(t, dt);  // optional animation (sine forward motion)
       const head_pos = this.snake.particles[0].pos;
       this.collectibles.update(t, head_pos);
+
+      let length = this.snake.length;
+      while (length < (this.score + this.starting_length)) {
+        this.snake.addSegment();
+        length++;
+      }
+
       if (this.board.checkBorderCollision(head_pos))
         this.game_over = true;
       if (this.snake.checkSelfCollision())
