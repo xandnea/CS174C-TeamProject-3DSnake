@@ -25,16 +25,12 @@ export const Board = class Board {
     this._generate_grass();
     this._rocks = [];
 
-    // put them on the edge, not outside
-    this.rock_margin = 1;        // basically on the edge
+    this.rock_margin = 1;
 
-    // pack more densely + multiple rows
-    this.rocks_per_side = this.grid_size * 0.5;   // denser than before
-    this.rock_rows = 1;                          // 2 layers of rocks
-
-    // BIGGER + more variation
-    this.rock_min_scale = 0.8;
-    this.rock_max_scale = 1;
+    this.rocks_per_side = this.grid_size * 0.6;
+    this.rock_rows = 1;
+    this.rock_min_scale = 0.3;
+    this.rock_max_scale = 0.7;
 
     this._generate_rocks();
   }
@@ -46,7 +42,6 @@ export const Board = class Board {
     const half = (this.grid_size * this.cell_size) / 2;
     const out = half + this.rock_margin;
 
-    // these must match the keys you added in this.shapes
     const rock_keys = [
       "rock_1_01","rock_1_02","rock_1_03","rock_1_04",
       "rock_2_01","rock_2_02","rock_2_03","rock_2_04",
@@ -73,25 +68,18 @@ export const Board = class Board {
       this._rocks.push({ key, x: x + jx, z: z + jz, rotY, scale: s });
     };
 
-    // top edge: z = -out (face inward)
     for (let i = 0; i < this.rocks_per_side; i++) {
       const x = -half + (i + 0.5) * step;
       add(x, -out, 0);
     }
-
-    // bottom edge: z = +out
     for (let i = 0; i < this.rocks_per_side; i++) {
       const x = -half + (i + 0.5) * step;
       add(x, +out, Math.PI);
     }
-
-    // left edge: x = -out
     for (let i = 0; i < this.rocks_per_side; i++) {
       const z = -half + (i + 0.5) * step;
       add(-out, z, Math.PI / 2);
     }
-
-    // right edge: x = +out
     for (let i = 0; i < this.rocks_per_side; i++) {
       const z = -half + (i + 0.5) * step;
       add(+out, z, -Math.PI / 2);
@@ -184,8 +172,8 @@ export const Board = class Board {
     }
       for (const r of this._rocks) {
         const rock_transform =
-          Mat4.translation(r.x, 0.4, r.z)
-            .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0)) // 90° around X (fix sideways model)
+          Mat4.translation(r.x, 0.5, r.z)
+            .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0)) 
       
         if (shapes[r.key]) {
           shapes[r.key].draw(webgl_manager, uniforms, rock_transform, materials.rock);
