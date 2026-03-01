@@ -76,8 +76,8 @@ class Spring {
 }
 
 export
-const Part_one_spring_base = defs.Part_one_spring_base =
-    class Part_one_spring_base extends Component
+const GameBase = defs.GameBase =
+    class GameBase extends Component
     {                                          // **My_Demo_Base** is a Scene that can be added to any display canvas.
                                                // This particular scene is broken up into two pieces for easier understanding.
                                                // The piece here is the base class, which sets up the machinery to draw a simple
@@ -201,7 +201,7 @@ const Part_one_spring_base = defs.Part_one_spring_base =
     }
 
 
-export class Part_one_spring extends Part_one_spring_base
+export class Game extends GameBase
 {                                                    // **Assign_one_hermite** is a Scene object that can be added to any display canvas.
                                                      // This particular scene is broken up into two pieces for easier understanding.
                                                      // See the other piece, My_Demo_Base, if you need to see the setup code.
