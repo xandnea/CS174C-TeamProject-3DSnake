@@ -2,7 +2,7 @@ import {tiny, defs} from './examples/common.js';
 import { Snake } from "./snake.js";
 // Pull these names into this module's scope for convenience:
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
-import { Grass_Blade } from "./tiny_grass.js";
+
 // TODO: you should implement the required classes here or in another file.
 import {Board} from "./board.js"
 import { Collectible } from './collect.js';
@@ -98,9 +98,7 @@ const Part_one_spring_base = defs.Part_one_spring_base =
         this.shapes = { 'box'  : new defs.Cube(),
           'ball' : new defs.Subdivision_Sphere( 4 ),
           'axis' : new defs.Axis_Arrows(),
-          'tree1' : new defs.Shape_From_File("assets/tree1.obj"),
-          'grass_blade': new Grass_Blade() 
-        };
+          'tree1' : new defs.Shape_From_File("assets/tree1.obj") };
 
         // *** Materials: ***  A "material" used on individual shapes specifies all fields
         // that a Shader queries to light/color it properly.  Here we use a Phong shader.
