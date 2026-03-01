@@ -23,8 +23,80 @@ export const Board = class Board {
 
     this._grass = [];
     this._generate_grass();
+    this._rocks = [];
+
+    // put them on the edge, not outside
+    this.rock_margin = 1;        // basically on the edge
+
+    // pack more densely + multiple rows
+    this.rocks_per_side = this.grid_size * 0.5;   // denser than before
+    this.rock_rows = 1;                          // 2 layers of rocks
+
+    // BIGGER + more variation
+    this.rock_min_scale = 0.8;
+    this.rock_max_scale = 1;
+
+    this._generate_rocks();
+  }
+  _pick(arr) {
+    return arr[Math.floor(this._rand() * arr.length)];
   }
 
+  _generate_rocks() {
+    const half = (this.grid_size * this.cell_size) / 2;
+    const out = half + this.rock_margin;
+
+    // these must match the keys you added in this.shapes
+    const rock_keys = [
+      "rock_1_01","rock_1_02","rock_1_03","rock_1_04",
+      "rock_2_01","rock_2_02","rock_2_03","rock_2_04",
+      "rock_3_01","rock_3_02","rock_3_03","rock_3_04",
+      "rock_4_01","rock_4_02","rock_4_03","rock_4_04",
+      "rock_5_01","rock_5_02","rock_5_03","rock_5_04",
+      "rock_6_01","rock_6_02","rock_6_03","rock_6_04",
+    ];
+
+    const total_len = this.grid_size * this.cell_size;
+    const step = total_len / this.rocks_per_side;
+
+    const add = (x, z, face_dir) => {
+      const key = this._pick(rock_keys);
+
+      const s = this.rock_min_scale +
+                (this.rock_max_scale - this.rock_min_scale) * this._rand();
+
+      const rotY = face_dir + (this._rand() - 0.5) * 0.8;
+
+      const jx = (this._rand() - 0.5) * step * 0.4;
+      const jz = (this._rand() - 0.5) * step * 0.4;
+
+      this._rocks.push({ key, x: x + jx, z: z + jz, rotY, scale: s });
+    };
+
+    // top edge: z = -out (face inward)
+    for (let i = 0; i < this.rocks_per_side; i++) {
+      const x = -half + (i + 0.5) * step;
+      add(x, -out, 0);
+    }
+
+    // bottom edge: z = +out
+    for (let i = 0; i < this.rocks_per_side; i++) {
+      const x = -half + (i + 0.5) * step;
+      add(x, +out, Math.PI);
+    }
+
+    // left edge: x = -out
+    for (let i = 0; i < this.rocks_per_side; i++) {
+      const z = -half + (i + 0.5) * step;
+      add(-out, z, Math.PI / 2);
+    }
+
+    // right edge: x = +out
+    for (let i = 0; i < this.rocks_per_side; i++) {
+      const z = -half + (i + 0.5) * step;
+      add(+out, z, -Math.PI / 2);
+    }
+  }
   _rand() {
     this._rng_state = (1664525 * this._rng_state + 1013904223) >>> 0;
     return this._rng_state / 4294967296;
@@ -110,5 +182,14 @@ export const Board = class Board {
 
       shapes.grass_blade.draw(webgl_manager, uniforms, blade, { ...materials.grass, color: b.blade_color });
     }
+      for (const r of this._rocks) {
+        const rock_transform =
+          Mat4.translation(r.x, 0.4, r.z)
+            .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0)) // 90° around X (fix sideways model)
+      
+        if (shapes[r.key]) {
+          shapes[r.key].draw(webgl_manager, uniforms, rock_transform, materials.rock);
+        }
+      }
   }
 };
