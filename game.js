@@ -98,7 +98,8 @@ const GameBase = defs.GameBase =
         this.shapes = { 'box'  : new defs.Cube(),
           'ball' : new defs.Subdivision_Sphere( 4 ),
           'axis' : new defs.Axis_Arrows(),
-          'tree1' : new defs.Shape_From_File("assets/tree1.obj"),
+          'tree1' : new defs.Shape_From_File("assets/obstacles/tree1.obj"),
+          'rock1' : new defs.Shape_From_File("assets/obstacles/rock1.obj"),
           'grass_blade': new Grass_Blade(6, 0.10, 0.45, 0.12),
           'rock_1': new defs.Shape_From_File("assets/Rocks/Rock Type1 01/Rock Type1 01.obj"),
           'rock_2': new defs.Shape_From_File("assets/Rocks/Rock Type1 02/Rock Type1 02.obj"),
@@ -156,7 +157,8 @@ const GameBase = defs.GameBase =
         this.materials.spring = { shader: phong, ambient: 0.6, diffusivity: 0.4,  specularity: 0.1, color: color(0.5, 0.5, 0.5, 1) };
         this.materials.grass = { shader: phong, ambient: 0.6, diffusivity: 0.5, specularity: 0.0, color: color(.9,.5,.9,1) };
         this.materials.collect = { shader: phong, ambient: 0.8, diffusivity: 0.4, specularity: 0.0, color: color(0.78, 0.31, 0.26, 1)}; // TODO definitely change this
-        this.materials.tree1 = { shader: tex_phong, ambient: 1, diffusivity: 1, specularity: 1, texture: new Texture("assets/tree1_texture.png") };
+        this.materials.tree1 = { shader: tex_phong, ambient: 1, diffusivity: 1, specularity: 1, texture: new Texture("assets/obstacles/tree1_texture.png") };
+        this.materials.rock1 = { shader: tex_phong, ambient: 1, diffusivity: 1, specularity: 1, texture: new Texture("assets/obstacles/rock1_texture.png") };
 
         this.ball_location = vec3(1, 1, 1);
         this.ball_radius = 0.25;

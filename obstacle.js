@@ -18,16 +18,16 @@ export const Obstacle = class Obstacle {
         let type = null;
         let radius = 0.5;
         const variant = Math.floor(Math.random() * 3);
-        // if (Math.random() < 0.5) {
-        //     type = "rock";
-        //     radius = 0.6;
-        // } else {
-        //     type = "tree";
-        //     radius = 0.5;
-        // }
-        type = "tree";
-        return { pos: vec3(x, this.r, z), type, variant, radius };
-}
+        const rotation = Math.random() * 2 * Math.PI;
+        if (Math.random() < 0.5) {
+            type = "rock";
+            radius = 0.6;
+        } else {
+            type = "tree";
+            radius = 0.5;
+        }
+        return { pos: vec3(x, this.r, z), type, variant, radius, rotation};
+    }
     
     checkCollision(snakeHeadPosition) {
         for (let obstacle of this.instances) {
@@ -42,8 +42,15 @@ export const Obstacle = class Obstacle {
         for (const obstacle of this.instances) {
             if (obstacle.type == "tree") {
                 const tree_transform = Mat4.translation(obstacle.pos[0], 2.8, obstacle.pos[2])
-                    .times(Mat4.scale(1, 1, 1));
+                    .times(Mat4.scale(1, 1, 1))
+                    .times(Mat4.rotation(obstacle.rotation, 0, 1, 0));
                 shapes.tree1.draw(webgl_manager, uniforms, tree_transform, materials.tree1);
+            }
+            else if (obstacle.type == "rock") {
+                const rock_transform = Mat4.translation(obstacle.pos[0], 0.3, obstacle.pos[2])
+                    .times(Mat4.scale(0.5, 0.5, 0.5))
+                    .times(Mat4.rotation(obstacle.rotation, 0, 1, 0));
+                shapes.rock1.draw(webgl_manager, uniforms, rock_transform, materials.rock1);
             }
         }
     }
