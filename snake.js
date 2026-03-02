@@ -146,7 +146,7 @@ const Snake = class Snake {
     }
   }
 
-  set_direction(dir) {
+  setDirection(dir) {
     const opposite = this.direction.times(-1);
     if (dir.minus(opposite).norm() > 0.01) {
       this.direction = dir.normalized();
@@ -211,6 +211,10 @@ const Snake = class Snake {
     this.particles.push(new Particle(new_pos, vec3(0, 0, 0), 1));
     this.springs.push(new Spring(this.length - 1, this.length, this.node_distance, 1000, 30));
     this.length++;
+  }
+
+  increaseSpeed(amount) {
+    this.speed += amount;
   }
     
   draw(caller, uniforms, shapes, materials) {

@@ -161,7 +161,6 @@ const GameBase = defs.GameBase =
         this.ball_location = vec3(1, 1, 1);
         this.ball_radius = 0.25;
 
-        // TODO: you should create the necessary shapes
         this.particles = [];
         this.springs = [];
         this.gravity = 9.8;
@@ -202,9 +201,9 @@ const GameBase = defs.GameBase =
           -8 + ((t0 * forward_speed) % 16)
         );
 
-        // 5 particles, spacing 0.6
         this.starting_length = 5;
-        this.snake = new Snake(this.starting_length, 0.6, head0);
+        const particle_distance = 0.6;
+        this.snake = new Snake(this.starting_length, particle_distance, head0);
       }
 
       render_animation( caller )
@@ -305,7 +304,7 @@ export class Game extends GameBase
     // Playing field:
     this.board.draw(caller, this.uniforms, this.shapes, this.materials);
     this.score = this.collectibles.score;
-    document.getElementById("output").value = "Score: " + this.score;
+    if (!this.game_over) document.getElementById("output").value = "Score: " + this.score + "\nSpeed: " + this.snake.speed;
 
     // Snake:
     if (!this.game_over) {
@@ -316,15 +315,22 @@ export class Game extends GameBase
       let length = this.snake.length;
       while (length < (this.score + this.starting_length)) {
         this.snake.addSegment();
+        this.snake.increaseSpeed(0.5); // increase forward speed slightly every time we eat a collectible, can be tweaked
         length++;
       }
 
-      if (this.obstacles.checkCollision(head_pos))
+      if (this.obstacles.checkCollision(head_pos)) {
+        document.getElementById("output").value = "You hit an obstacle! Game Over! Final Score: " + this.score;
         this.game_over = true;
-      if (this.board.checkBorderCollision(head_pos))
+      }
+      if (this.board.checkBorderCollision(head_pos)) {
+        document.getElementById("output").value = "You hit the border! Game Over! Final Score: " + this.score;
         this.game_over = true;
-      if (this.snake.checkSelfCollision())
+      }
+      if (this.snake.checkSelfCollision()) {
+        document.getElementById("output").value = "You hit yourself! Game Over! Final Score: " + this.score;
         this.game_over = true;
+      }
     }
     this.snake.draw(caller, this.uniforms, this.shapes, this.materials);
     this.collectibles.draw(caller, this.uniforms, this.shapes, this.materials);
@@ -458,13 +464,13 @@ export class Game extends GameBase
     // buttons with key bindings for affecting this scene, and live info readouts.
     this.control_panel.innerHTML += "Snake Controls:";
     this.new_line();
-    this.key_triggered_button("Forward", ["ArrowUp"], () => this.snake.set_direction(vec3(0, 0, -1)));
+    this.key_triggered_button("Forward", ["ArrowUp"], () => this.snake.setDirection(vec3(0, 0, -1)));
     this.new_line();
-    this.key_triggered_button("Backward", ["ArrowDown"], () => this.snake.set_direction(vec3(0, 0, 1)));
+    this.key_triggered_button("Backward", ["ArrowDown"], () => this.snake.setDirection(vec3(0, 0, 1)));
     this.new_line();
-    this.key_triggered_button("Left", ["ArrowLeft"], () => this.snake.set_direction(vec3(-1, 0, 0)));
+    this.key_triggered_button("Left", ["ArrowLeft"], () => this.snake.setDirection(vec3(-1, 0, 0)));
     this.new_line();
-    this.key_triggered_button("Right", ["ArrowRight"], () => this.snake.set_direction(vec3(1, 0, 0)));
+    this.key_triggered_button("Right", ["ArrowRight"], () => this.snake.setDirection(vec3(1, 0, 0)));
     this.new_line();
     this.key_triggered_button("Reset", ["r"], function() {
       this.game_over = false;
