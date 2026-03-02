@@ -9,6 +9,7 @@ export const Collectible = class Collectible {
         this.score = 0;
         this.x_bounds = x_bound; // Grid boundary in form [x_lower, x_upper]
         this.z_bounds = z_bound;
+        this.particles = []; // For collection particle effect
 
         this.spawn(n);
     }
@@ -25,8 +26,19 @@ export const Collectible = class Collectible {
         const hx = position[0];
         const hz = position[2];
         let i = 0;
+        while (i < this.particles.length) { // Delete expired particle groups or update particles
+            if (this.particles[i].die) {
+                this.particles.splice(i, 1); // I really really really hope that the memory gets deallocated normally
+            } else {
+                this.particles[i].update();
+                i++;
+            }
+        }
+        i = 0; // Reusing the same iterator. Who cares
         while (i < this.instances.length) {
-            if ((hx - this.instances[i][0]) ** 2 + (hz - this.instances[i][2]) ** 2 < this.size) {
+            const c = this.instances[i];
+            if ((hx - c[0]) ** 2 + (hz - c[2]) ** 2 < this.size) {
+                this.particles.push(new Sparkle(c[0], c[1], c[2]));
                 this.instances.splice(i, 1);
                 this.score += 1;
                 this.spawn(1);
@@ -42,7 +54,53 @@ export const Collectible = class Collectible {
             const collect_transform = Mat4.translation(i[0], i[1], i[2]).times(Mat4.scale(this.r, this.r, this.r));
             shapes.ball.draw(webgl_manager, uniforms, collect_transform, { ...materials.collect, color: color(0.78, 0.31, 0.26, 1)});
         }
-        // TODO Add scoreboard display of some kind
+        for (const p of this.particles) {
+            p.draw(webgl_manager, uniforms, shapes, materials);
+        }
+    }
+}
+
+// This was originally written for ThreeJS
+class Sparkle {
+    constructor(x, y, z) {
+        this.die = false;
+        const size = 60; // Number of particles. More would look better but I'm worried about performance
+        this.r = 0.05; // This is probably huge
+        this.lifetime = 1500; // Milliseconds
+        this.createTime = Date.now();
+
+        this.positions = [];
+        this.velocities = [];
+        for (let i = 0; i < size; i++) {
+            this.positions[i] = vec3(x, y, z);
+            this.velocities[i] = vec3(Math.random() * 0.1 - 0.05, Math.random() * 0.1, Math.random() * 0.1 - 0.05);
+            // Probably want to modify these but we'll see
+        }
+    }
+
+    update() {
+        const deltaTime = Date.now() - this.createTime;
+        if (Date.now() - this.createTime >= this.lifetime) {
+            this.die = true;
+            this.positions = null;
+            this.velocities = null; // Probably not necessary but just to be safe
+        } else {
+            for (let i = 0; i < this.positions.length; i += 3) {
+                this.positions[i] = this.positions[i].plus(this.velocities[i]);
+
+                this.velocities[i][0] -= 0.001; // Simulated drag
+                this.velocities[i][1] += (deltaTime / 1000) **2 * -0.008; // Gravitational decay
+                this.velocities[i][2] -= 0.001;
+            }
+        }
+    }
+
+    draw(webgl_manager, uniforms, shapes, materials) {
+        if (this.die) return;
+        for (const i of this.positions) {
+            const particle_transform = Mat4.translation(i[0], i[1], i[2]).times(Mat4.scale(this.r, this.r, this.r));
+            shapes.ball.draw(webgl_manager, uniforms, particle_transform, { ...materials.collect, color: color(1, 0.94, 0.57, 1)});
+        }
     }
 }
 

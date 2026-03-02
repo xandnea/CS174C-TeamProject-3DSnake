@@ -79,7 +79,10 @@ const Snake = class Snake {
     this.t_sim = 0;
     this.integration = integration;
     this.gravity = 0; 
-    this.direction = vec3(0, 0, 1);
+    
+    //this.direction = vec3(0, 0, 1); removed for lerp alternative 
+    this.target_direction = vec3(0, 0, 1);
+    this.current_direction = vec3(0, 0, 1);
     this.speed = 2.0;
 
     // snake params:
@@ -99,6 +102,11 @@ const Snake = class Snake {
   }
 
   update(t, dt_frame) {
+    // Lerp current direction towards target direction for smooth turning
+    const turn_speed = 20.0;
+    let diff = this.target_direction.minus(this.current_direction);
+    this.current_direction = this.current_direction.plus(diff.times(turn_speed * dt_frame)).normalized();
+
     // const forward_speed = 2.0;
     const wave_freq = 3.0;
     const wave_amp = 0.02;
@@ -108,13 +116,9 @@ const Snake = class Snake {
     // Save old positions (COPIES) so velocity is correct
     const old_pos = this.particles.map(p => p.pos.copy());
       
-    // Head target
-    // const x = wave_amp * Math.sin(t * wave_freq);
-    // const y = 0.5;
-    // const z = -8 + ((t * forward_speed) % 16);
-    // const lead_pos = vec3(x, y, z);
-    const perpendicular_dir = vec3(this.direction[2], 0, this.direction[0]);
-    const path = this.particles[0].pos.plus(this.direction.times(this.speed * dt_frame));
+    // Head target position is forward along current direction, plus a sine wave for slithering
+    const perpendicular_dir = vec3(this.current_direction[2], 0, this.current_direction[0]);
+    const path = this.particles[0].pos.plus(this.current_direction.times(this.speed * dt_frame));
     const lead_pos = path.plus(perpendicular_dir.times(wave_amp * Math.sin(t * wave_freq)));
     
     // Move head (kinematic)
@@ -146,10 +150,11 @@ const Snake = class Snake {
     }
   }
 
-  set_direction(dir) {
-    const opposite = this.direction.times(-1);
-    if (dir.minus(opposite).norm() > 0.01) {
-      this.direction = dir.normalized();
+  setDirection(dir) {
+    const opposite = this.current_direction.times(-1);
+    // prevent 180 degree turns
+    if (dir.dot(this.current_direction) > -0.9) {
+      this.target_direction = dir.normalized();
     }
   }
 
@@ -207,10 +212,14 @@ const Snake = class Snake {
 
   addSegment() {
     const last = this.particles[this.length - 1];
-    const new_pos = last.pos.minus(this.direction.times(this.node_distance));
+    const new_pos = last.pos.minus(this.current_direction.times(this.node_distance));
     this.particles.push(new Particle(new_pos, vec3(0, 0, 0), 1));
     this.springs.push(new Spring(this.length - 1, this.length, this.node_distance, 1000, 30));
     this.length++;
+  }
+
+  increaseSpeed(amount) {
+    this.speed += amount;
   }
     
   draw(caller, uniforms, shapes, materials) {
@@ -229,7 +238,7 @@ const Snake = class Snake {
           dir = vec3(0, 0, 1); // fallback if particles are overlapping
         }
       } else {
-        dir = this.direction.normalized();
+        dir = this.current_direction.normalized();
       }
 
       let z_axis = dir;
