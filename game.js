@@ -100,45 +100,45 @@ const GameBase = defs.GameBase =
           'axis' : new defs.Axis_Arrows(),
           'tree1' : new defs.Shape_From_File("assets/tree1.obj"),
           'grass_blade': new Grass_Blade(6, 0.10, 0.45, 0.12),
-          'rock_1': new defs.Shape_From_File("asset/Rocks/Rock Type1 01/Rock Type1 01.obj"),
-          'rock_2': new defs.Shape_From_File("asset/Rocks/Rock Type1 02/Rock Type1 02.obj"),
-          'rock_3': new defs.Shape_From_File("asset/Rocks/Rock Type1 03/Rock Type1 03.obj"),
-          'rock_4': new defs.Shape_From_File("asset/Rocks/Rock Type1 04/Rock Type1 04.obj"),
+          'rock_1': new defs.Shape_From_File("assets/Rocks/Rock Type1 01/Rock Type1 01.obj"),
+          'rock_2': new defs.Shape_From_File("assets/Rocks/Rock Type1 02/Rock Type1 02.obj"),
+          'rock_3': new defs.Shape_From_File("assets/Rocks/Rock Type1 03/Rock Type1 03.obj"),
+          'rock_4': new defs.Shape_From_File("assets/Rocks/Rock Type1 04/Rock Type1 04.obj"),
           // Type 1
-          'rock_1_01': new defs.Shape_From_File("asset/Rocks/Rock Type1 01/Rock Type1 01.obj"),
-          'rock_1_02': new defs.Shape_From_File("asset/Rocks/Rock Type1 02/Rock Type1 02.obj"),
-          'rock_1_03': new defs.Shape_From_File("asset/Rocks/Rock Type1 03/Rock Type1 03.obj"),
-          'rock_1_04': new defs.Shape_From_File("asset/Rocks/Rock Type1 04/Rock Type1 04.obj"),
+          'rock_1_01': new defs.Shape_From_File("assets/Rocks/Rock Type1 01/Rock Type1 01.obj"),
+          'rock_1_02': new defs.Shape_From_File("assets/Rocks/Rock Type1 02/Rock Type1 02.obj"),
+          'rock_1_03': new defs.Shape_From_File("assets/Rocks/Rock Type1 03/Rock Type1 03.obj"),
+          'rock_1_04': new defs.Shape_From_File("assets/Rocks/Rock Type1 04/Rock Type1 04.obj"),
 
           // Type 2
-          'rock_2_01': new defs.Shape_From_File("asset/Rocks/Rock Type2 01/Rock Type2 01.obj"),
-          'rock_2_02': new defs.Shape_From_File("asset/Rocks/Rock Type2 02/Rock Type2 02.obj"),
-          'rock_2_03': new defs.Shape_From_File("asset/Rocks/Rock Type2 03/Rock Type2 03.obj"),
-          'rock_2_04': new defs.Shape_From_File("asset/Rocks/Rock Type2 04/Rock Type2 04.obj"),
+          'rock_2_01': new defs.Shape_From_File("assets/Rocks/Rock Type2 01/Rock Type2 01.obj"),
+          'rock_2_02': new defs.Shape_From_File("assets/Rocks/Rock Type2 02/Rock Type2 02.obj"),
+          'rock_2_03': new defs.Shape_From_File("assets/Rocks/Rock Type2 03/Rock Type2 03.obj"),
+          'rock_2_04': new defs.Shape_From_File("assets/Rocks/Rock Type2 04/Rock Type2 04.obj"),
 
           // Type 3
-          'rock_3_01': new defs.Shape_From_File("asset/Rocks/Rock Type3 01/Rock Type3 01.obj"),
-          'rock_3_02': new defs.Shape_From_File("asset/Rocks/Rock Type3 02/Rock Type3 02.obj"),
-          'rock_3_03': new defs.Shape_From_File("asset/Rocks/Rock Type3 03/Rock Type3 03.obj"),
-          'rock_3_04': new defs.Shape_From_File("asset/Rocks/Rock Type3 04/Rock Type3 04.obj"),
+          'rock_3_01': new defs.Shape_From_File("assets/Rocks/Rock Type3 01/Rock Type3 01.obj"),
+          'rock_3_02': new defs.Shape_From_File("assets/Rocks/Rock Type3 02/Rock Type3 02.obj"),
+          'rock_3_03': new defs.Shape_From_File("assets/Rocks/Rock Type3 03/Rock Type3 03.obj"),
+          'rock_3_04': new defs.Shape_From_File("assets/Rocks/Rock Type3 04/Rock Type3 04.obj"),
 
           // Type 4
-          'rock_4_01': new defs.Shape_From_File("asset/Rocks/Rock Type4 01/Rock Type4 01.obj"),
-          'rock_4_02': new defs.Shape_From_File("asset/Rocks/Rock Type4 02/Rock Type4 02.obj"),
-          'rock_4_03': new defs.Shape_From_File("asset/Rocks/Rock Type4 03/Rock Type4 03.obj"),
-          'rock_4_04': new defs.Shape_From_File("asset/Rocks/Rock Type4 04/Rock Type4 04.obj"),
+          'rock_4_01': new defs.Shape_From_File("assets/Rocks/Rock Type4 01/Rock Type4 01.obj"),
+          'rock_4_02': new defs.Shape_From_File("assets/Rocks/Rock Type4 02/Rock Type4 02.obj"),
+          'rock_4_03': new defs.Shape_From_File("assets/Rocks/Rock Type4 03/Rock Type4 03.obj"),
+          'rock_4_04': new defs.Shape_From_File("assets/Rocks/Rock Type4 04/Rock Type4 04.obj"),
 
           // Type 5
-          'rock_5_01': new defs.Shape_From_File("asset/Rocks/Rock Type5 01/Rock Type5 01.obj"),
-          'rock_5_02': new defs.Shape_From_File("asset/Rocks/Rock Type5 02/Rock Type5 02.obj"),
-          'rock_5_03': new defs.Shape_From_File("asset/Rocks/Rock Type5 03/Rock Type5 03.obj"),
-          'rock_5_04': new defs.Shape_From_File("asset/Rocks/Rock Type5 04/Rock Type5 04.obj"),
+          'rock_5_01': new defs.Shape_From_File("assets/Rocks/Rock Type5 01/Rock Type5 01.obj"),
+          'rock_5_02': new defs.Shape_From_File("assets/Rocks/Rock Type5 02/Rock Type5 02.obj"),
+          'rock_5_03': new defs.Shape_From_File("assets/Rocks/Rock Type5 03/Rock Type5 03.obj"),
+          'rock_5_04': new defs.Shape_From_File("assets/Rocks/Rock Type5 04/Rock Type5 04.obj"),
 
           // Type 6
-          'rock_6_01': new defs.Shape_From_File("asset/Rocks/Rock Type6 01/Rock Type6 01.obj"),
-          'rock_6_02': new defs.Shape_From_File("asset/Rocks/Rock Type6 02/Rock Type6 02.obj"),
-          'rock_6_03': new defs.Shape_From_File("asset/Rocks/Rock Type6 03/Rock Type6 03.obj"),
-          'rock_6_04': new defs.Shape_From_File("asset/Rocks/Rock Type6 04/Rock Type6 04.obj"),
+          'rock_6_01': new defs.Shape_From_File("assets/Rocks/Rock Type6 01/Rock Type6 01.obj"),
+          'rock_6_02': new defs.Shape_From_File("assets/Rocks/Rock Type6 02/Rock Type6 02.obj"),
+          'rock_6_03': new defs.Shape_From_File("assets/Rocks/Rock Type6 03/Rock Type6 03.obj"),
+          'rock_6_04': new defs.Shape_From_File("assets/Rocks/Rock Type6 04/Rock Type6 04.obj"),
           
          };
 
