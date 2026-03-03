@@ -17,9 +17,9 @@ export const Obstacle = class Obstacle {
         const z = Math.floor(Math.random() * (this.z_bounds[1] - this.z_bounds[0])) + this.z_bounds[0];
         let type = null;
         let radius = 0.5;
-        const variant = Math.floor(Math.random() * 3);
+        const variant = Math.floor(Math.random() * 2);
         const rotation = Math.random() * 2 * Math.PI;
-        if (Math.random() < 0.5) {
+        if (Math.random() < 0.3) {
             type = "rock";
             radius = 0.6;
         } else {
@@ -47,10 +47,18 @@ export const Obstacle = class Obstacle {
                 shapes.tree1.draw(webgl_manager, uniforms, tree_transform, materials.tree1);
             }
             else if (obstacle.type == "rock") {
-                const rock_transform = Mat4.translation(obstacle.pos[0], 0.3, obstacle.pos[2])
-                    .times(Mat4.scale(0.5, 0.5, 0.5))
-                    .times(Mat4.rotation(obstacle.rotation, 0, 1, 0));
-                shapes.rock1.draw(webgl_manager, uniforms, rock_transform, materials.rock1);
+                if (obstacle.variant == 0) {
+                    const rock_transform = Mat4.translation(obstacle.pos[0], 0.3, obstacle.pos[2])
+                        .times(Mat4.scale(0.5, 0.5, 0.5))
+                        .times(Mat4.rotation(obstacle.rotation, 0, 1, 0));
+                    shapes.rock1.draw(webgl_manager, uniforms, rock_transform, materials.rock1);
+                } else {
+                    const rock_transform = Mat4.translation(obstacle.pos[0], 0.3, obstacle.pos[2])
+                        .times(Mat4.scale(0.5, 0.5, 0.5))
+                        .times(Mat4.rotation(obstacle.rotation, 0, 1, 0));
+                    shapes.rock2.draw(webgl_manager, uniforms, rock_transform, materials.rock2);
+                }
+                
             }
         }
     }
