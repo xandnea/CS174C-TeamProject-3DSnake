@@ -7,6 +7,7 @@ class Particle {
     this.mass = mass;
     this.f = vec3(0, 0, 0);
     this.prev_pos = pos.copy();
+    this.dir = vec3(0, 0, 1);
   }
 
   set_mass(new_mass) {
@@ -19,6 +20,10 @@ class Particle {
 
   set_vel(new_vel) {
     this.vel = new_vel.copy();
+  }
+
+  set_dir(new_dir) {
+    this.dir = new_dir.normalized();
   }
 
   apply_force(force_vec) {
@@ -212,7 +217,7 @@ const Snake = class Snake {
 
   addSegment() {
     const last = this.particles[this.length - 1];
-    const new_pos = last.pos.minus(this.current_direction.times(this.node_distance));
+    const new_pos = last.pos.minus((last.dir).times(this.node_distance));
     this.particles.push(new Particle(new_pos, vec3(0, 0, 0), 1));
     this.springs.push(new Spring(this.length - 1, this.length, this.node_distance, 1000, 30));
     this.length++;
@@ -240,6 +245,8 @@ const Snake = class Snake {
       } else {
         dir = this.current_direction.normalized();
       }
+
+      p.set_dir(dir); // update particle's direction for positioning new segments 
 
       let z_axis = dir;
       let x_axis = vec3(0, 1, 0).cross(z_axis); 
