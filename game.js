@@ -197,7 +197,7 @@ const GameBase = defs.GameBase =
         const particle_distance = 0.6;
         
         this.obstacles = new Obstacle(0.3, this.board.x_bounds, this.board.z_bounds, 5, head0);
-        this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3);
+        this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3, this.obstacles.instances);
         this.snake = new Snake(this.starting_length, particle_distance, head0);
       }
 

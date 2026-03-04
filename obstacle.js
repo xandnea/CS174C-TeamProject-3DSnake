@@ -20,6 +20,16 @@ export const Obstacle = class Obstacle {
             const dx = x - this.spawn_area[0];
             const dz = z - this.spawn_area[2];
             if (dx * dx + dz * dz < 25) continue; // less than 5 units away from head
+            let overlapping_obstacles = false;
+            for (const curr of this.instances) {
+                const curr_x = x - curr.pos[0];
+                const curr_z = z - curr.pos[2];
+                if (curr_x * curr_x + curr_z * curr_z < 1) {
+                    overlapping_obstacles = true;
+                    break;
+                } 
+            }
+            if (overlapping_obstacles) continue;
             const radius = 0.5;
             const variant = Math.floor(Math.random() * 2);
             const rotation = Math.random() * 2 * Math.PI;
@@ -58,7 +68,6 @@ export const Obstacle = class Obstacle {
                         .times(Mat4.rotation(obstacle.rotation, 0, 1, 0));
                     shapes.rock2.draw(webgl_manager, uniforms, rock_transform, materials.rock);
                 }
-                
             }
         }
     }
