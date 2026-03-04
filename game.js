@@ -153,14 +153,13 @@ const GameBase = defs.GameBase =
         this.materials = {};
         this.materials.plastic = { shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( .9,.5,.9,1 ) }
         this.materials.metal   = { shader: phong, ambient: .2, diffusivity: 1, specularity:  1, color: color( .9,.5,.9,1 ) }
-        this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assetss/rgb.jpg" ) }
+        this.materials.rgb = { shader: tex_phong, ambient: .5, texture: new Texture( "assets/rgb.jpg" ) }
         this.materials.particle = { shader: phong, ambient: 0.8, diffusivity: 0.4,  specularity: 0.1, color: color(0, 0, 1, 1) };
         this.materials.spring = { shader: phong, ambient: 0.6, diffusivity: 0.4,  specularity: 0.1, color: color(0.5, 0.5, 0.5, 1) };
         this.materials.grass = { shader: phong, ambient: 0.6, diffusivity: 0.5, specularity: 0.0, color: color(.9,.5,.9,1) };
         this.materials.collect = { shader: phong, ambient: 0.8, diffusivity: 0.4, specularity: 0.0, color: color(0.78, 0.31, 0.26, 1)}; // TODO definitely change this
         this.materials.tree1 = { shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("assets/obstacles/tree1_texture.png") };
-        this.materials.rock1 = { shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("assets/obstacles/rock1_texture.png") };
-        this.materials.rock2 = { shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("assets/obstacles/rock2_texture.png") };
+        this.materials.rock = { shader: phong, ambient: 0.4, diffusivity: 0.9, specularity: 0.1, color: color(0.5, 0.5, 0.5, 1) };
 
         this.ball_location = vec3(1, 1, 1);
         this.ball_radius = 0.25;
@@ -178,19 +177,8 @@ const GameBase = defs.GameBase =
         this.grid_size = this.board.grid_size;
         this.cell_size = this.board.cell_size;
 
-        this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3);
-        
-        
-        this.obstacles = new Obstacle(0.3, this.board.x_bounds, this.board.z_bounds, 5);
         // Current default setup has 3 collectibles on screen at once
         // Also I picked the radius at random
-        this.materials.rock = {
-          shader: phong,
-          ambient: 0.4,
-          diffusivity: 0.9,
-          specularity: 0.1,
-          color: color(0.5, 0.5, 0.5, 1)
-        };
         this.game_over = false;
         this.score = 0;
         // Spawn head at the same place the animation wants at t=0
@@ -207,6 +195,9 @@ const GameBase = defs.GameBase =
 
         this.starting_length = 5;
         const particle_distance = 0.6;
+        
+        this.obstacles = new Obstacle(0.3, this.board.x_bounds, this.board.z_bounds, 5, head0);
+        this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3);
         this.snake = new Snake(this.starting_length, particle_distance, head0);
       }
 

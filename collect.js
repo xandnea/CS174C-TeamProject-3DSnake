@@ -2,7 +2,7 @@ import { tiny, defs } from './examples/common.js';
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
 
 export const Collectible = class Collectible {
-    constructor(r, x_bound, z_bound, n) {
+    constructor(r, x_bound, z_bound, n, obstacles) {
         this.instances = []; // Collectible instances stored as vec3's
         this.r = r;
         this.size = r ** 2; // Store radius squared to reduce computation in update()
@@ -10,15 +10,33 @@ export const Collectible = class Collectible {
         this.x_bounds = x_bound; // Grid boundary in form [x_lower, x_upper]
         this.z_bounds = z_bound;
         this.particles = []; // For collection particle effect
+        this.obstacles = obstacles;
 
         this.spawn(n);
     }
 
     spawn(n) { // Spawns n collectibles. No checks to prevent spawning inside snake
-        for (let i = 0; i < n; i++) {
+        // for (let i = 0; i < n; i++) {
+        //     const x = Math.floor(Math.random() * (this.x_bounds[1] - this.x_bounds[0])) + this.x_bounds[0] + 0.5;
+        //     const z = Math.floor(Math.random() * (this.z_bounds[1] - this.z_bounds[0])) + this.z_bounds[0] + 0.5;
+        //     this.instances.push(vec3(x, this.r + 0.1, z));
+        // }
+        let i = 0;
+        while (i < n) {
             const x = Math.floor(Math.random() * (this.x_bounds[1] - this.x_bounds[0])) + this.x_bounds[0] + 0.5;
             const z = Math.floor(Math.random() * (this.z_bounds[1] - this.z_bounds[0])) + this.z_bounds[0] + 0.5;
+            let blocked_by_obstacle = false;
+            for (const obs of this.obstacles) {
+                const dx = x - obs.pos[0];
+                const dz = z - obs.pos[2];
+                if (dx * dx + dz * dz < 1) {
+                    blocked_by_obstacle = true;
+                    break;
+                }
+            }
+            if (blocked_by_obstacle) continue;
             this.instances.push(vec3(x, this.r + 0.1, z));
+            i++;
         }
     }
 

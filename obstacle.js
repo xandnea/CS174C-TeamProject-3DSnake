@@ -2,31 +2,31 @@ import { tiny, defs } from './examples/common.js';
 const { vec3, vec4, color, Mat4, Shape, Material, Shader, Texture, Component } = tiny;
 
 export const Obstacle = class Obstacle {
-    constructor(r, x_bound, z_bound, n) {
+    constructor(r, x_bound, z_bound, n, spawn_area) {
         this.instances = [];
         this.x_bounds = x_bound;
         this.z_bounds = z_bound;
         this.r = r;
+        this.spawn_area = spawn_area;
         for (let i = 0; i < n; i++) {
             this.instances.push(this.getPosition());
         }
     }
 
     getPosition() {
-        const x = Math.floor(Math.random() * (this.x_bounds[1] - this.x_bounds[0])) + this.x_bounds[0];
-        const z = Math.floor(Math.random() * (this.z_bounds[1] - this.z_bounds[0])) + this.z_bounds[0];
-        let type = null;
-        let radius = 0.5;
-        const variant = Math.floor(Math.random() * 2);
-        const rotation = Math.random() * 2 * Math.PI;
-        if (Math.random() < 0.3) {
-            type = "rock";
-            radius = 0.6;
-        } else {
-            type = "tree";
-            radius = 0.5;
+        while (true) {
+            const x = Math.floor(Math.random() * (this.x_bounds[1] - this.x_bounds[0])) + this.x_bounds[0];
+            const z = Math.floor(Math.random() * (this.z_bounds[1] - this.z_bounds[0])) + this.z_bounds[0];
+            const dx = x - this.spawn_area[0];
+            const dz = z - this.spawn_area[2];
+            if (dx * dx + dz * dz < 25) continue; // less than 5 units away from head
+            const radius = 0.5;
+            const variant = Math.floor(Math.random() * 2);
+            const rotation = Math.random() * 2 * Math.PI;
+            const type = Math.random() < 0.7 ? "rock" : "tree";
+            return { pos: vec3(x, this.r, z), type, variant, radius, rotation};
         }
-        return { pos: vec3(x, this.r, z), type, variant, radius, rotation};
+        
     }
     
     checkCollision(snakeHeadPosition) {
@@ -51,12 +51,12 @@ export const Obstacle = class Obstacle {
                     const rock_transform = Mat4.translation(obstacle.pos[0], 0.3, obstacle.pos[2])
                         .times(Mat4.scale(0.5, 0.5, 0.5))
                         .times(Mat4.rotation(obstacle.rotation, 0, 1, 0));
-                    shapes.rock1.draw(webgl_manager, uniforms, rock_transform, materials.rock1);
+                    shapes.rock1.draw(webgl_manager, uniforms, rock_transform, materials.rock);
                 } else {
                     const rock_transform = Mat4.translation(obstacle.pos[0], 0.3, obstacle.pos[2])
                         .times(Mat4.scale(0.5, 0.5, 0.5))
                         .times(Mat4.rotation(obstacle.rotation, 0, 1, 0));
-                    shapes.rock2.draw(webgl_manager, uniforms, rock_transform, materials.rock2);
+                    shapes.rock2.draw(webgl_manager, uniforms, rock_transform, materials.rock);
                 }
                 
             }
