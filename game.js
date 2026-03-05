@@ -8,73 +8,6 @@ import {Board} from "./board.js"
 import { Collectible } from './collect.js';
 import { Obstacle } from "./obstacle.js";
 
-class Particle {
-  constructor(pos, vel, mass) { // pos and vel are vec3
-    this.pos = pos;
-    this.vel = vel;
-    this.mass = mass;
-    this.f = vec3(0, 0, 0);
-    this.prev_pos = pos;
-  }
-
-  set_mass(new_mass) {
-    this.mass = new_mass;
-  }
-
-  set_pos(new_pos) {
-    this.pos = new_pos;
-  }
-
-  set_vel(new_vel) {
-    this.vel = new_vel;
-  }
-
-  apply_force(force_vec) {
-    this.f = this.f.plus(force_vec);
-  }
-}
-
-class Spring {
-  constructor(p1_index = 0, p2_index = 0, rest_length = 0, stiffness = 0, damping = 0) {
-    this.p1_i = p1_index;
-    this.p2_i = p2_index;
-    this.L = rest_length;
-    this.Ks = stiffness;
-    this.Kd = damping;
-  }
-
-  set(p1_index, p2_index, Ks, Kd, length) {
-    this.p1_i = p1_index;
-    this.p2_i = p2_index;
-    this.Ks = Ks;
-    this.Kd = Kd;
-    this.L = length;
-  } 
-
-  update(particles) { // spring/damping forces calculation
-    const p1 = particles[this.p1_i];
-    const p2 = particles[this.p2_i];
-
-    // calculate vector diff
-    const delta = (p2.pos).minus(p1.pos);
-    const dist = delta.norm();
-    if (dist < 1e-6) return; // avoid division by zero
-    const dir = delta.normalized();
-
-    // spring forces (hooke's law) ==> F_s = -k_s*(dist_p - L_s)*direction
-    const fs = dir.times(-this.Ks * (dist - this.L));
-
-    // damping force ==> F_d = -k_d*(velocity_vec dot normalized dist_p)*direction
-    const rel_v = (p2.vel).minus(p1.vel);
-    const fd = dir.times(-this.Kd * rel_v.dot(dir));
-
-    // apply forces
-    const total_f = fs.plus(fd);
-    p1.apply_force(total_f.times(-1));
-    p2.apply_force(total_f);
-  }
-}
-
 export
 const GameBase = defs.GameBase =
     class GameBase extends Component
@@ -182,8 +115,8 @@ const GameBase = defs.GameBase =
         this.game_over = false;
         this.score = 0;
         // Spawn head at the same place the animation wants at t=0
-        const starting_speed = 4.0;
-        const wave_freq = 4.0;
+        const starting_speed = 2.0;
+        const wave_freq = 5.0;
         const wave_amp = 0.4;
         const t0 = 0;
 
@@ -199,14 +132,12 @@ const GameBase = defs.GameBase =
         this.obstacles = new Obstacle(0.3, this.board.x_bounds, this.board.z_bounds, 5, head0);
         this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3, this.obstacles.instances);
         this.snake = new Snake(this.starting_length, starting_speed, particle_distance, head0);
+
+        this.accumulated_time = 0;
       }
 
       render_animation( caller )
-      {                                                // display():  Called once per frame of animation.  We'll isolate out
-        // the code that actually draws things into Assign_one_hermite, a
-        // subclass of this Scene.  Here, the base class's display only does
-        // some initial setup.
-
+      {                                                
         // set a background color for the canvas (red, green, blue, alpha)
         caller.context.clearColor(0.1, 0.4, 0.1, 0.35); 
 
@@ -245,18 +176,9 @@ const GameBase = defs.GameBase =
 
 
 export class Game extends GameBase
-{                                                    // **Assign_one_hermite** is a Scene object that can be added to any display canvas.
-                                                     // This particular scene is broken up into two pieces for easier understanding.
-                                                     // See the other piece, My_Demo_Base, if you need to see the setup code.
-                                                     // The piece here exposes only the display() method, which actually places and draws
-                                                     // the shapes.  We isolate that code so it can be experimented with on its own.
-                                                     // This gives you a very small code sandbox for editing a simple scene, and for
-                                                     // experimenting with matrix transformations.
+{                                                    
   render_animation( caller )
-  {                                                // display():  Called once per frame of animation.  For each shape that you want to
-    // appear onscreen, place a .draw() call for it inside.  Each time, pass in a
-    // different matrix value to control where the shape appears.
-
+  {                                               
     // Variables that are in scope for you to use:
     // this.shapes.box:   A vertex array object defining a 2x2x2 cube.
     // this.shapes.ball:  A vertex array object defining a 2x2x2 spherical surface.
@@ -270,34 +192,10 @@ export class Game extends GameBase
     // Call the setup code that we left inside the base class:
     super.render_animation( caller );
 
-    /**********************************
-     Start coding down here!!!!
-     **********************************/
-        // From here on down it's just some example shapes drawn for you -- freely
-        // replace them with your own!  Notice the usage of the Mat4 functions
-        // translation(), scale(), and rotation() to generate matrices, and the
-        // function times(), which generates products of matrices.
-
-    const blue = color( 0,0,1,1 ), yellow = color( 1,1,0,1 ), grey = color( 0.5, 0.5, 0.5, 1 ), red = color( 1, 0, 0, 1 );
-
-    const t = this.t = this.uniforms.animation_time/1000;
-
-    // !!! Draw ground
-    // let floor_transform = Mat4.translation(0, 0, 0).times(Mat4.scale(10, 0.01, 10));
-    // this.shapes.box.draw( caller, this.uniforms, floor_transform, { ...this.materials.plastic, color: yellow } );
-
-    // !!! Draw ball (for reference)
-    let ball_transform = Mat4.translation(this.ball_location[0], this.ball_location[1], this.ball_location[2])
-        .times(Mat4.scale(this.ball_radius, this.ball_radius, this.ball_radius));
-    //this.shapes.ball.draw( caller, this.uniforms, ball_transform, { ...this.materials.metal, color: blue } );
-
-    // TODO: you should draw spline here.
-
-    // animation_delta_time is the time since the LAST frame (usually ~16ms)
-    //let dt = this.uniforms.animation_delta_time / 1000;s
-    let dt = 1/60; // use fixed timestep for more stable simulation, can be tweaked
-    dt = Math.min(dt, 1/60);
-
+    // Animation time: 
+      // animation_time is the total time since the program started, in milliseconds
+      // animation_delta_time is the time since the LAST frame (usually ~16ms)
+    let dt = this.uniforms.animation_delta_time / 1000;
 
     // Playing field:
     this.board.draw(caller, this.uniforms, this.shapes, this.materials);
@@ -309,9 +207,14 @@ export class Game extends GameBase
 
     // Snake:
     if (!this.game_over) {
-      this.snake.update(t, dt);  // optional animation (sine forward motion)
+      let timestep = 0;
+      while (timestep < dt) {
+        this.snake.update(this.t, dt);
+        timestep++;
+      }
+      //this.snake.update(t, dt);  // optional animation (sine forward motion)
       const head_pos = this.snake.particles[0].pos;
-      this.collectibles.update(t, head_pos);
+      this.collectibles.update(this.t, head_pos);
 
       let length = this.snake.length;
       while (length < (this.score + this.starting_length)) {
@@ -343,128 +246,6 @@ export class Game extends GameBase
     this.snake.draw(caller, this.uniforms, this.shapes, this.materials);
     this.collectibles.draw(caller, this.uniforms, this.shapes, this.materials);
     this.obstacles.draw(caller, this.uniforms, this.shapes, this.materials);
-    
-    /*if (this.running) {
-      if (this.t_sim === undefined) this.t_sim = 0;
-      const t_next = this.t_sim + dt;
- 
-      const t_step = this.dt;
-
-      this.accumulator += dt;
-
-      while (this.accumulator >= this.dt) {
-        this.simulate(this.dt);
-        this.t_sim += this.dt;
-        this.accumulator -= this.dt;
-      }
-    }*/
-    
-    // DRAW
-    /*for (let p of this.particles) {
-      let matrix = Mat4.translation(p.pos[0], p.pos[1], p.pos[2])
-                       .times(Mat4.scale(0.1, 0.1, 0.1));
-      this.shapes.ball.draw(caller, this.uniforms, matrix, this.materials.particle);
-    }*/
-
-    /*r (let s of this.springs) {
-      const p1 = this.particles[s.p1_i].pos;
-      const p2 = this.particles[s.p2_i].pos;
-
-      const delta = p2.minus(p1);
-      const len = delta.norm();
-      const center = (p1.plus(p2)).times(0.5);
-
-      if (len < 0.001) continue;
-
-      // y axis of spring, x axis = spring y axis (cross) world y axis
-      const y_axis = delta.normalized();
-      let x_axis = vec3(1, 0, 0).cross(y_axis);
-      if (x_axis.norm() < 1e-6) x_axis = vec3(0, 0, 1).cross(y_axis); // Handle vertical case
-      x_axis = x_axis.normalized();
-      const z_axis = x_axis.cross(y_axis).normalized();
-
-      const rotation = Mat4.of(
-          [x_axis[0], y_axis[0], z_axis[0], 0],
-          [x_axis[1], y_axis[1], z_axis[1], 0],
-          [x_axis[2], y_axis[2], z_axis[2], 0],
-          [0, 0, 0, 1]
-      );
-
-      let model_transform = Mat4.translation(center[0], center[1], center[2])
-          .times(rotation)
-          .times(Mat4.scale(0.02, len / 2, 0.02));
-
-      this.shapes.box.draw(caller, this.uniforms, model_transform, this.materials.spring);
-    }*/
-  }
-
-  // dedicated function for physics simulation
-  simulate(h) {
-    // reset forces on all particles
-    for (let p of this.particles) p.f = vec3(0, 0, 0);
-
-    // accumulate forces to determine how to move particle
-    // -- gravity
-    for (let p of this.particles) p.apply_force(vec3(0, -this.gravity * p.mass, 0));
-    // -- springs
-    for (let s of this.springs) s.update(this.particles);
-    // -- ground
-    for (let p of this.particles) {
-      const surface_level = 0.15; 
-      if (p.pos[1] < surface_level) {
-        const penetration = surface_level - p.pos[1];
-        
-        // normal spring force (pushing up)
-        let fy_spring = this.ground_ks * penetration;
-
-        // damping force (vertical and horizontal)
-        const floor_damping_factor = 1; // arbitrary factor to make it feel more realistic like example, can be tweaked
-        let fx_friction = -this.ground_kd * p.vel[0];
-        let fy_damping = -this.ground_kd * floor_damping_factor * p.vel[1];
-        let fz_friction = -this.ground_kd * p.vel[2];
-
-        const fx = fx_friction;
-        const fy = fy_spring + fy_damping;
-        const fz = fz_friction;
-
-        p.apply_force(vec3(fx, fy, fz));
-
-        //if particle is barely moving, apply additional damping to stop jittering on the ground like example
-        if (p.vel.norm() < 0.05) {
-            p.vel = vec3(p.vel[0] * 0.9, p.vel[1], p.vel[2] * 0.9);
-        }
-      }
-    }
-
-    // integrate
-    for (let p of this.particles) {
-      if (p.mass <= 0) {
-        p.vel = vec3(0, 0, 0);
-        continue;
-      }
-      const accel = (p.f).times(1 / p.mass);
-
-      if (this.integration == "euler") {
-        // use current velocity to find new position 
-        // x_t+1 = x_t + v_t * h 
-        // v_t+1 = v_t + a_t * h
-        p.pos = p.pos.plus(p.vel.times(h));
-        p.vel = p.vel.plus(accel.times(h));
-      } else if (this.integration == "symplectic") {
-        // update velocity first then use new velocity to update positions
-        // v_t+1 = v_t + a_t * h
-        // x_t+1 = x_t + v_t+1 * h
-        p.vel = p.vel.plus(accel.times(h));
-        p.pos = p.pos.plus(p.vel.times(h));
-      } else if (this.integration == "verlet") {
-        // use difference between current pos and prev pos 
-        // x_t+1 = 2x_t - x_t-1 + a_t * h^2
-        const temp = p.pos;
-        p.pos = p.pos.times(2).minus(p.prev_pos).plus(accel.times(h * h));
-        p.prev_pos = temp;
-        p.vel = p.pos.minus(p.prev_pos).times(1 / h); // (x_t - x_t-1)*(1/dt)
-      }
-    }
   }
 
   render_controls()
@@ -483,7 +264,7 @@ export class Game extends GameBase
     this.key_triggered_button("Reset", ["r"], function() {
       this.game_over = false;
       const forward_speed = 2.0;
-      const wave_freq = 4.0;
+      const wave_freq = 5.0;
       const wave_amp = 0.4;
       const t0 = 0;
 
@@ -498,119 +279,6 @@ export class Game extends GameBase
       this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3);
     });
     this.new_line();
-  }
-
-  parse_commands() {
-    // Clear output
-    //document.getElementById("output").value = "";
-    this.running = false;
-
-    // Set up commands
-    const one_word_commands = ["particle", "all_velocities", "link", "integration", "ground", "gravity"];
-
-    // Get input and split it into lines
-    const input_text = document.getElementById("input").value;
-    const lines = input_text.split(/\r?\n/); //.map(l => l.trim()).filter(l => l.length > 0);
-
-    // separate lines into words and parse commands
-    for (let line of lines) {
-      const words = line.trim().split(/\s+/);
-      //if (words.length == 0) document.getElementById("output").value = "empty line";
-
-      let command = "";
-      if (one_word_commands.includes(words[0])) command = words[0]
-      else if (words[0] == "create") command = words[0] + ' ' + words[1];
-
-      switch (command) {
-        case "create particles": 
-          const N = parseInt(words[2]);
-          for (let i = 0; i < N; i++) {
-            this.particles[i] = new Particle(vec3(0, 0, 0), vec3(0, 0, 0), 0);
-          }
-          break;
-        case "particle": {
-          const ind = parseInt(words[1]);
-          const mass = parseFloat(words[2]);
-          const x = parseFloat(words[3]);
-          const y = parseFloat(words[4]);
-          const z = parseFloat(words[5]);
-          const vx = parseFloat(words[6]);
-          const vy = parseFloat(words[7]);
-          const vz = parseFloat(words[8]);
-          const p = this.particles[ind];
-          p.set_mass(mass);
-          p.set_pos(vec3(x, y, z));
-          p.set_vel(vec3(vx, vy, vz));
-          //p.prev_pos = vec3(x, y, z).minus(vec3(vx, vy, vz).times(this.dt));
-          break;
-        }
-        case "all_velocities": {
-          const vx = parseFloat(words[1]);
-          const vy = parseFloat(words[2]);
-          const vz = parseFloat(words[3]);
-          for (let p of this.particles) {
-            p.set_vel(vec3(vx, vy, vz));
-          }
-          break;
-        }
-        case "create springs": {
-          const N = parseInt(words[2]);
-          this.springs = [];
-          for (let i = 0; i < N; i++) {
-            this.springs.push(new Spring());
-          }
-          break;
-        }
-        case "link": {
-          const sind = parseInt(words[1]);
-          const p1_i = parseInt(words[2]);
-          const p2_i = parseInt(words[3]);
-          const ks = parseFloat(words[4]);
-          const kd = parseFloat(words[5]);
-          const L = parseFloat(words[6]);
-          const spring = this.springs[sind];
-          const p1 = this.particles[p1_i];
-          const p2 = this.particles[p2_i];
-
-          if (L < 0) {
-            const delta = (p2.pos).minus(p1.pos);
-            let length = delta.norm();
-            spring.set(p1_i, p2_i, ks, kd, length);
-          } else {
-            spring.set(p1_i, p2_i, ks, kd, L);
-          }
-          break;
-        }
-        case "integration": {
-          const type = words[1];
-          const h = parseFloat(words[2]);
-          this.dt = h;
-          if ((type != "euler") && (type != "symplectic") && (type != "verlet")) {
-            //document.getElementById("output").value = "unknown integration type";
-          } else {
-            this.integration = type;
-          }
-          break;
-        }
-        case "ground": {
-          const ks = parseFloat(words[1]);
-          const kd = parseFloat(words[2]);
-          this.ground_ks = ks;
-          this.ground_kd = kd;
-          break;
-        }
-        case "gravity": {
-          const g = parseFloat(words[1]);
-          this.gravity = g;
-          break;
-        }
-        default: 
-          //document.getElementById("output").value = "unknown command";
-          break;
-      }
-    }
-
-    document.getElementById("input").value = ""; // clear input after parsing
   }
 
   update_scene() { // callback for Draw button
