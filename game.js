@@ -302,7 +302,10 @@ export class Game extends GameBase
     // Playing field:
     this.board.draw(caller, this.uniforms, this.shapes, this.materials);
     this.score = this.collectibles.score;
-    if (!this.game_over) document.getElementById("current-score").textContent = this.score;
+    if (!this.game_over) {
+      document.getElementById("current-score").textContent = this.score;
+      document.getElementById("current-speed").textContent = this.snake.speed.toFixed(1);
+    }
 
     // Snake:
     if (!this.game_over) {
@@ -329,7 +332,14 @@ export class Game extends GameBase
         //document.getElementById("output").value = "You hit yourself! Game Over! Final Score: " + this.score;
         this.game_over = true;
       }
+    } else {
+      const gameOverUI = document.getElementById("game-over-screen");
+      if (gameOverUI && gameOverUI.style.display != "flex") {
+        gameOverUI.style.display = "block";
+        document.getElementById("final-score").textContent = this.score;
+      }
     }
+
     this.snake.draw(caller, this.uniforms, this.shapes, this.materials);
     this.collectibles.draw(caller, this.uniforms, this.shapes, this.materials);
     this.obstacles.draw(caller, this.uniforms, this.shapes, this.materials);

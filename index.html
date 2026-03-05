@@ -34,6 +34,57 @@
             padding: 20px;
         }
 
+        #score {
+            font-size: 32px; 
+            font-weight: bold; 
+            color: white; 
+            /* text-shadow: 2px 2px 4px black; */
+            border-width: 3px;
+            border-radius: 30px;
+            border-color: rgb(43, 255, 0);
+            border-style: solid;
+            display: inline-block;
+            padding: 10px 20px;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #game-over-screen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 200;
+            display: none;
+        }
+
+        #final-score-text {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+
+        #end-game-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        #restart-button, #quit-button {
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background-color: rgb(43, 255, 0);
+            color: black;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
         /* Spacer: for pushing the controls down */
         #game-viewport-area {
             height: 100vh;
@@ -62,8 +113,18 @@
 <body>
 
 <div id="ui-layer">
-    <div style="font-size: 32px; font-weight: bold; color: white; text-shadow: 2px 2px 4px black;">
-        SCORE: <span id="current-score">0</span>
+    <div id="score">
+        SCORE: <span id="current-score">0</span><br>
+        SPEED: <span id="current-speed">0</span>
+    </div>
+</div>
+
+<div id="game-over-screen">
+    <h1 id="game-over-text">GAME OVER</h1>
+    <p id="final-score-text">Your final score: <span id="final-score">0</span></p>
+    <div id="end-game-buttons">
+        <button id="restart-button" onclick="window.location.reload()">Restart Game</button>
+        <button id="quit-button" onclick="window.close()">Quit</button>
     </div>
 </div>
 
