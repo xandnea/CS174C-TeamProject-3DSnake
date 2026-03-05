@@ -73,7 +73,7 @@ class Spring {
 }
 
 const Snake = class Snake {
-  constructor(length = 3, node_distance = 0.2, start_point = vec3(0, 0.5, 0), integration = "symplectic") {
+  constructor(length = 3, starting_speed = 4.0, node_distance = 0.2, start_point = vec3(0, 0.5, 0), integration = "symplectic") {
     this.length = length;
     this.node_distance = node_distance;
     this.particles = [];
@@ -88,7 +88,7 @@ const Snake = class Snake {
     //this.direction = vec3(0, 0, 1); removed for lerp alternative 
     this.target_direction = vec3(0, 0, 1);
     this.current_direction = vec3(0, 0, 1);
-    this.speed = 2.0;
+    this.speed = starting_speed;
 
     // snake params:
     this.particle_width = 0.2;

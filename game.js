@@ -182,7 +182,7 @@ const GameBase = defs.GameBase =
         this.game_over = false;
         this.score = 0;
         // Spawn head at the same place the animation wants at t=0
-        const forward_speed = 2.0;
+        const starting_speed = 4.0;
         const wave_freq = 4.0;
         const wave_amp = 0.4;
         const t0 = 0;
@@ -190,7 +190,7 @@ const GameBase = defs.GameBase =
         const head0 = vec3(
           wave_amp * Math.sin(t0 * wave_freq),
           0.25,
-          -8 + ((t0 * forward_speed) % 16)
+          -8 + ((t0 * starting_speed) % 16)
         );
 
         this.starting_length = 5;
@@ -198,7 +198,7 @@ const GameBase = defs.GameBase =
         
         this.obstacles = new Obstacle(0.3, this.board.x_bounds, this.board.z_bounds, 5, head0);
         this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3, this.obstacles.instances);
-        this.snake = new Snake(this.starting_length, particle_distance, head0);
+        this.snake = new Snake(this.starting_length, starting_speed, particle_distance, head0);
       }
 
       render_animation( caller )
