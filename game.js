@@ -207,6 +207,9 @@ const GameBase = defs.GameBase =
         // subclass of this Scene.  Here, the base class's display only does
         // some initial setup.
 
+        // set a background color for the canvas (red, green, blue, alpha)
+        caller.context.clearColor(0.1, 0.4, 0.1, 0.35); 
+
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
         if( !caller.controls )
         { this.animated_children.push( caller.controls = new defs.Movement_Controls( { uniforms: this.uniforms } ) );
@@ -220,7 +223,7 @@ const GameBase = defs.GameBase =
           // perspective() are field of view, aspect ratio, and distances to the near plane and far plane.
 
           // !!! Camera changed here
-          Shader.assign_camera( Mat4.look_at (vec3 (0, 25, 0), vec3 (0, 0, 0), vec3 (0, 0, -1)), this.uniforms );
+          Shader.assign_camera( Mat4.look_at (vec3 (0, 34, 0), vec3 (0, 0, 0), vec3 (0, 0, -1)), this.uniforms );
         }
         this.uniforms.projection_transform = Mat4.perspective( Math.PI/4, caller.width/caller.height, 1, 100 );
 
@@ -299,7 +302,7 @@ export class Game extends GameBase
     // Playing field:
     this.board.draw(caller, this.uniforms, this.shapes, this.materials);
     this.score = this.collectibles.score;
-    if (!this.game_over) document.getElementById("output").value = "Score: " + this.score + "\nSpeed: " + this.snake.speed;
+    if (!this.game_over) document.getElementById("current-score").textContent = this.score;
 
     // Snake:
     if (!this.game_over) {
@@ -315,15 +318,15 @@ export class Game extends GameBase
       }
 
       if (this.obstacles.checkCollision(head_pos)) {
-        document.getElementById("output").value = "You hit an obstacle! Game Over! Final Score: " + this.score;
+        //document.getElementById("output").value = "You hit an obstacle! Game Over! Final Score: " + this.score;
         this.game_over = true;
       }
       if (this.board.checkBorderCollision(head_pos)) {
-        document.getElementById("output").value = "You hit the border! Game Over! Final Score: " + this.score;
+        //document.getElementById("output").value = "You hit the border! Game Over! Final Score: " + this.score;
         this.game_over = true;
       }
       if (this.snake.checkSelfCollision()) {
-        document.getElementById("output").value = "You hit yourself! Game Over! Final Score: " + this.score;
+        //document.getElementById("output").value = "You hit yourself! Game Over! Final Score: " + this.score;
         this.game_over = true;
       }
     }
@@ -485,34 +488,11 @@ export class Game extends GameBase
       this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3);
     });
     this.new_line();
-
-    /* Some code for your reference
-    this.key_triggered_button( "Copy input", [ "c" ], function() {
-      let text = document.getElementById("input").value;
-      console.log(text);
-      document.getElementById("output").value = text;
-    } );
-    this.new_line();
-    this.key_triggered_button( "Relocate", [ "r" ], function() {
-      let text = document.getElementById("input").value;
-      const words = text.split(' ');
-      if (words.length >= 3) {
-        const x = parseFloat(words[0]);
-        const y = parseFloat(words[1]);
-        const z = parseFloat(words[2]);
-        this.ball_location = vec3(x, y, z)
-        document.getElementById("output").value = "success";
-      }
-      else {
-        document.getElementById("output").value = "invalid input";
-      }
-    } );
-     */
   }
 
   parse_commands() {
     // Clear output
-    document.getElementById("output").value = "";
+    //document.getElementById("output").value = "";
     this.running = false;
 
     // Set up commands
@@ -525,7 +505,7 @@ export class Game extends GameBase
     // separate lines into words and parse commands
     for (let line of lines) {
       const words = line.trim().split(/\s+/);
-      if (words.length == 0) document.getElementById("output").value = "empty line";
+      //if (words.length == 0) document.getElementById("output").value = "empty line";
 
       let command = "";
       if (one_word_commands.includes(words[0])) command = words[0]
@@ -596,7 +576,7 @@ export class Game extends GameBase
           const h = parseFloat(words[2]);
           this.dt = h;
           if ((type != "euler") && (type != "symplectic") && (type != "verlet")) {
-            document.getElementById("output").value = "unknown integration type";
+            //document.getElementById("output").value = "unknown integration type";
           } else {
             this.integration = type;
           }
@@ -615,7 +595,7 @@ export class Game extends GameBase
           break;
         }
         default: 
-          document.getElementById("output").value = "unknown command";
+          //document.getElementById("output").value = "unknown command";
           break;
       }
     }
@@ -625,11 +605,11 @@ export class Game extends GameBase
 
   update_scene() { // callback for Draw button
     this.curve.update(this.webgl_manager, (t) => this.spline.evaluate(t));
-    document.getElementById("output").value = "scene updated";
+    //document.getElementById("output").value = "scene updated";
   }
 
   start() { // callback for Run button
-    document.getElementById("output").value = "start";
+    //document.getElementById("output").value = "start";
     this.t_sim = this.uniforms.animation_time / 1000; // Match the engine clock exactly
     this.running = true;
 

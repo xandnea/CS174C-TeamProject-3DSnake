@@ -1,60 +1,96 @@
-<!-- Graphics Example Code.
-index.html - The web page document containing the canvas (drawing surface).  It launches your JavaScript files. //-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>Snake 3D</title>
     <style>
-        /* Set additional styling options for the columns*/
-        .column {
-        float: left;
-        width: 50%;
+        body, html {
+            margin: 0;
+            padding: 0;
+            background: #111;
+            overflow-x: hidden;
+            overflow-y: auto; /* Enable the scrollbar */
         }
-        .row:after {
-        content: "";
-        display: table;
-        clear: both;
+
+        /* Canvas (game): "Live Wallpaper" mode */
+        canvas {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: -1 !important; /* Sit BEHIND everything */
+            display: block !important;
+            object-fit: cover;
+        }
+
+        /* Score: always on top, never moves */
+        #ui-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            pointer-events: none;
+            padding: 20px;
+        }
+
+        /* Spacer: for pushing the controls down */
+        #game-viewport-area {
+            height: 100vh;
+            width: 100%;
+            pointer-events: none; /* Let clicks pass through to the game */
+        }
+
+        /* Controls: slides up from the bottom */
+        #main-section {
+            position: relative;
+            z-index: 10;
+            background: #222; /* Solid color to hide the game when scrolling */
+            color: white;
+            min-height: 100vh;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Clean up the engine's injected styles */
+        .document-builder, .program-stuff {
+            max-width: none !important;
+            width: 100% !important;
+            margin: 0 !important;
         }
     </style>
+</head>
+<body>
 
-    <meta charset="UTF-8"/>
-    <link rel="icon" href="assets/fav.ico">
-    <title>WebGL</title></head>
-<body style="background: rgb(33, 71, 40)">
-<!-- Begin typing your web page's text here. //-->
-
-<button id="p1">Part 1</button>
-<button id="p2">Part 2</button>
-
-<div class="row">
-    <div class="column">
-        <pre>Input: </pre>
-        <textarea id="input" cols="80" rows="5"></textarea>
-    </div>
-    <div class="column">
-        <pre>Output: </pre>
-        <textarea id="output" cols="80" rows="5"></textarea>
+<div id="ui-layer">
+    <div style="font-size: 32px; font-weight: bold; color: white; text-shadow: 2px 2px 4px black;">
+        SCORE: <span id="current-score">0</span>
     </div>
 </div>
 
+<div id="game-viewport-area"></div>
 
-<!-- The following code embeds a WebGL canvas panel powered by a tree of Components from tiny-graphics.  //-->
 <div id="main-section" class="document-builder"></div>
-<script type=module>
-// ********************* THE ENTRY POINT OF YOUR JAVASCRIPT PROGRAM STARTS HERE *********************
-// Indicate which element on the page you want the Canvas_Widget to replace with a 3D WebGL area:
-const element_to_replace = document.querySelector ("#main-section");
-import {main_scene, scene_selector, additional_scenes} from './main-scene.js';
-const root = new main_scene ();                                                     // This line creates your scene.
-root.animated_children.push (...additional_scenes.map (scene => new scene ()));
-root.render_layout (element_to_replace);
 
-function select_scene(i) {
-    element_to_replace.innerHTML = "";
-    const scene = scene_selector(i);
-    const root = new scene();                                                     // This line creates your scene.
-    root.animated_children.push (...additional_scenes.map (scene => new scene ()));
-    root.render_layout (element_to_replace);
-}
+<script type="module">
+    const element_to_replace = document.querySelector("#main-section");
+    import {main_scene, scene_selector, additional_scenes} from './main-scene.js';
+    
+    const root = new main_scene();
+    root.animated_children.push(...additional_scenes.map(scene => new scene()));
+    root.render_layout(element_to_replace);
+
+    // Instead of forcing the width/height, ensure the CSS is locked to the window size.
+    const lockStyle = () => {
+        const canvas = document.querySelector("canvas");
+        if (canvas) {
+            canvas.style.width = "100vw";
+            canvas.style.height = "100vh";
+            canvas.style.position = "fixed";
+        }
+    };
+
+    // Run a few times to make sure we win against the engine
+    setInterval(lockStyle, 500);
 </script>
 
 </body>
