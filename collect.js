@@ -64,7 +64,7 @@ export const Collectible = class Collectible {
                 i++;
             }
         }
-        const y = Math.sin(t) * 0.25 + 0.35;
+        const y = Math.sin(t) * 0.25 + 0.35 + this.r;
         for (let i of this.instances) {
             i[1] = y;
         }

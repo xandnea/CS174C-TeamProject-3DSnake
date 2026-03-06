@@ -108,7 +108,7 @@ const Snake = class Snake {
 
   update(t, dt_frame) {
     // Lerp current direction towards target direction for smooth turning
-    const turn_speed = 20.0;
+    const turn_speed = 10.0;
     let diff = this.target_direction.minus(this.current_direction);
     this.current_direction = this.current_direction.plus(diff.times(turn_speed * dt_frame)).normalized();
 
@@ -125,7 +125,6 @@ const Snake = class Snake {
     const perpendicular_dir = vec3(this.current_direction[2], 0, this.current_direction[0]);
     const path = this.particles[0].pos.plus(this.current_direction.times(this.speed * dt_frame));
     const lead_pos = path.plus(perpendicular_dir.times(wave_amp * Math.sin(t * wave_freq)));
-    
     // Move head (kinematic)
     this.particles[0].set_pos(lead_pos);
     this.particles[0].set_vel(lead_pos.minus(old_pos[0]).times(inv_dt));
@@ -155,11 +154,23 @@ const Snake = class Snake {
     }
   }
 
-  setDirection(dir) {
-    const opposite = this.current_direction.times(-1);
-    // prevent 180 degree turns
-    if (dir.dot(this.current_direction) > -0.9) {
-      this.target_direction = dir.normalized();
+  setDirection(dir, camera_follow_snake, going_left) {
+    if (camera_follow_snake) {
+      if (this.current_direction[0] == 1 || this.current_direction[0] == -1) {
+        if (going_left) this.target_direction = vec3(0, 0, -this.current_direction[0]);
+        else this.target_direction = vec3(0, 0, this.current_direction[0]);
+      }
+      else {
+        if (going_left) this.target_direction = vec3(this.current_direction[2], 0, 0);
+        else this.target_direction = vec3(-this.current_direction[2], 0, 0);
+      }
+    }
+    else {
+      const opposite = this.current_direction.times(-1);
+      // prevent 180 degree turns
+      if (dir.dot(this.current_direction) > -0.9) {
+        this.target_direction = dir.normalized();
+      }
     }
   }
 

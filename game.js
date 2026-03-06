@@ -105,6 +105,7 @@ const GameBase = defs.GameBase =
         this.dt = 0.01;
         this.integration = "euler";
         this.running = false;
+        this.camera_follow_snake = false;
 
         this.board = new Board(20, 1);
         this.grid_size = this.board.grid_size;
@@ -145,7 +146,7 @@ const GameBase = defs.GameBase =
         if( !caller.controls )
         { this.animated_children.push( caller.controls = new defs.Movement_Controls( { uniforms: this.uniforms } ) );
           caller.controls.add_mouse_controls( caller.canvas );
-
+            
           // Define the global camera and projection matrices, which are stored in shared_uniforms.  The camera
           // matrix follows the usual format for transforms, but with opposite values (cameras exist as
           // inverted matrices).  The projection matrix follows an unusual format and determines how depth is
@@ -214,6 +215,16 @@ export class Game extends GameBase
       }
       //this.snake.update(t, dt);  // optional animation (sine forward motion)
       const head_pos = this.snake.particles[0].pos;
+      if (this.camera_follow_snake) {
+        Shader.assign_camera( Mat4.look_at (head_pos.plus(this.snake.current_direction.times(-10)).plus(vec3(0, 2, 0)), 
+                                            head_pos.plus(this.snake.current_direction.times(10)).plus(vec3(0, 2, 0)), 
+                                            vec3 (0, 1, 0)), 
+                                            this.uniforms );
+      } else {
+        Shader.assign_camera(
+          Mat4.look_at(vec3(0, 34, 0), vec3(0, 0, 0), vec3(0, 0, -1)),
+          this.uniforms );
+      }
       this.collectibles.update(this.t, head_pos);
 
       let length = this.snake.length;
@@ -253,13 +264,13 @@ export class Game extends GameBase
     // buttons with key bindings for affecting this scene, and live info readouts.
     this.control_panel.innerHTML += "Snake Controls:";
     this.new_line();
-    this.key_triggered_button("Forward", ["ArrowUp"], () => this.snake.setDirection(vec3(0, 0, -1)));
+    this.key_triggered_button("Forward", ["ArrowUp"], () => this.snake.setDirection(vec3(0, 0, -1), this.camera_follow_snake, false));
     this.new_line();
-    this.key_triggered_button("Backward", ["ArrowDown"], () => this.snake.setDirection(vec3(0, 0, 1)));
+    this.key_triggered_button("Backward", ["ArrowDown"], () => this.snake.setDirection(vec3(0, 0, 1), this.camera_follow_snake, false));
     this.new_line();
-    this.key_triggered_button("Left", ["ArrowLeft"], () => this.snake.setDirection(vec3(-1, 0, 0)));
+    this.key_triggered_button("Left", ["ArrowLeft"], () => this.snake.setDirection(vec3(-1, 0, 0), this.camera_follow_snake, true));
     this.new_line();
-    this.key_triggered_button("Right", ["ArrowRight"], () => this.snake.setDirection(vec3(1, 0, 0)));
+    this.key_triggered_button("Right", ["ArrowRight"], () => this.snake.setDirection(vec3(1, 0, 0), this.camera_follow_snake, false));
     this.new_line();
     this.key_triggered_button("Reset", ["r"], function() {
       this.game_over = false;
@@ -277,6 +288,14 @@ export class Game extends GameBase
       // 5 particles, spacing 0.6
       this.snake = new Snake(6, 0.6, head0);
       this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3);
+    });
+    this.new_line();
+    this.key_triggered_button("Top-down view", ["1"], () => {
+      this.camera_follow_snake = false;
+    });
+    this.new_line();
+    this.key_triggered_button("Follow snake", ["2"], () => {
+      this.camera_follow_snake = true;
     });
     this.new_line();
   }
