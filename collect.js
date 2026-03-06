@@ -23,8 +23,8 @@ export const Collectible = class Collectible {
         // }
         let i = 0;
         while (i < n) {
-            const x = Math.floor(Math.random() * (this.x_bounds[1] - this.x_bounds[0])) + this.x_bounds[0] + 0.5;
-            const z = Math.floor(Math.random() * (this.z_bounds[1] - this.z_bounds[0])) + this.z_bounds[0] + 0.5;
+            const x = Math.floor(Math.random() * (this.x_bounds[1] - this.x_bounds[0] - 1)) + this.x_bounds[0] + 1.5;
+            const z = Math.floor(Math.random() * (this.z_bounds[1] - this.z_bounds[0] - 1)) + this.z_bounds[0] + 1.5;
             let blocked_by_obstacle = false;
             for (const obs of this.obstacles) {
                 const dx = x - obs.pos[0];
@@ -64,7 +64,11 @@ export const Collectible = class Collectible {
                 i++;
             }
         }
-        // TODO add a simple floating animation later
+        const y = Math.sin(t) * 0.25 + 0.35;
+        for (let i of this.instances) {
+            i[1] = y;
+        }
+        console.log("hi");
     }
 
     draw(webgl_manager, uniforms, shapes, materials) {
