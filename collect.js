@@ -55,7 +55,7 @@ export const Collectible = class Collectible {
         i = 0; // Reusing the same iterator. Who cares
         while (i < this.instances.length) {
             const c = this.instances[i];
-            if ((hx - c[0]) ** 2 + (hz - c[2]) ** 2 < this.size) {
+            if ((hx - c[0]) ** 2 + (hz - c[2]) ** 2 < this.size + 0.2) {
                 this.particles.push(new Sparkle(c[0], c[1], c[2]));
                 this.instances.splice(i, 1);
                 this.score += 1;
@@ -68,7 +68,6 @@ export const Collectible = class Collectible {
         for (let i of this.instances) {
             i[1] = y;
         }
-        console.log("hi");
     }
 
     draw(webgl_manager, uniforms, shapes, materials) {
