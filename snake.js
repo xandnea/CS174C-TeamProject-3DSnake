@@ -7,7 +7,7 @@ class Particle {
     this.mass = mass;
     this.f = vec3(0, 0, 0);
     this.prev_pos = pos.copy();
-    this.dir = vec3(0, 0, 1);
+    this.dir = vec3(0, 0, -1);
   }
 
   set_mass(new_mass) {
@@ -113,8 +113,8 @@ const Snake = class Snake {
     this.current_direction = this.current_direction.plus(diff.times(turn_speed * dt_frame)).normalized();
 
     // const forward_speed = 2.0;
-    const wave_freq = 3.0;
-    const wave_amp = 0.02;
+    const wave_freq = 2.5;
+    const wave_amp = 0.01;
     
     const inv_dt = 1 / Math.max(dt_frame, 1e-6);
     
@@ -154,18 +154,13 @@ const Snake = class Snake {
     }
   }
 
-  setDirection(dir, camera_follow_snake, going_left) {
+  setDirection(dir, camera_follow_snake, offset = 0) {
     if (camera_follow_snake) {
-      const turn_amount = 0.2;
-      const delta_angle = (going_left ? turn_amount : -turn_amount);
-
       const current_angle = Math.atan2(this.current_direction[0], this.current_direction[2]);
-      const new_angle = current_angle + delta_angle;
+      const new_angle = current_angle + offset;
       this.target_direction = vec3(Math.sin(new_angle), 0, Math.cos(new_angle)).normalized();
-    }
-    else {
-      const opposite = this.current_direction.times(-1);
-      // prevent 180 degree turns
+
+    } else if (dir) {
       if (dir.dot(this.current_direction) > -0.9) {
         this.target_direction = dir.normalized();
       }

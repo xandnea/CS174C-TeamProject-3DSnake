@@ -144,8 +144,8 @@ const GameBase = defs.GameBase =
         this.score = 0;
         // Spawn head at the same place the animation wants at t=0
         const starting_speed = 2.0;
-        const wave_freq = 5.0;
-        const wave_amp = 0.4;
+        const wave_freq = 1.0;
+        const wave_amp = 0.1;
         const t0 = 0;
 
         const head0 = vec3(
@@ -161,7 +161,17 @@ const GameBase = defs.GameBase =
         this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3, this.obstacles.instances);
         this.snake = new Snake(this.starting_length, starting_speed, particle_distance, head0);
 
+        this.accumulator = 0;
+        
         this.scoreElement = document.getElementById("score-box");
+
+        window.addEventListener("keydown", (e) => {
+          const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "];
+
+          if (keys.includes(e.key)) {
+            e.preventDefault();
+          }
+        }, {passive: false});
 
         this.accumulated_time = 0;
 
@@ -406,7 +416,7 @@ export class Game extends GameBase
     // Animation time: 
       // animation_time is the total time since the program started, in milliseconds
       // animation_delta_time is the time since the LAST frame (usually ~16ms)
-    let dt = this.uniforms.animation_delta_time / 1000;
+    let dt_frame = this.uniforms.animation_delta_time / 1000;
 
     // Clouds:
     this.draw_clouds(caller, this.uniforms);
@@ -421,12 +431,18 @@ export class Game extends GameBase
 
     // Snake:
     if (!this.game_over) {
-      let timestep = 0;
-      while (timestep < dt) {
-        this.snake.update(this.t, dt);
+      while (this.accumulator < dt_frame) {
+        this.snake.update(this.t, this.dt);
         this.snake.resolveObstacleCollisions(this.obstacles);
-        timestep++;
+        this.accumulator += this.dt;
       }
+      this.accumulator = 0;
+      // let timestep = 0;
+      // while (timestep < dt) {
+      //   this.snake.update(this.t, dt);
+      //   this.snake.resolveObstacleCollisions(this.obstacles);
+      //   timestep += fixed_dt;
+      // }
       //this.snake.update(t, dt);  // optional animation (sine forward motion)
       const head_pos = this.snake.particles[0].pos;
       if (this.camera_follow_snake) {
@@ -455,16 +471,40 @@ export class Game extends GameBase
       }
 
       if (this.obstacles.checkCollision(head_pos)) {
-        //document.getElementById("output").value = "You hit an obstacle! Game Over! Final Score: " + this.score;
         this.game_over = true;
       }
       if (this.board.checkBorderCollision(head_pos)) {
-        //document.getElementById("output").value = "You hit the border! Game Over! Final Score: " + this.score;
         this.game_over = true;
       }
       if (this.snake.checkSelfCollision()) {
-        //document.getElementById("output").value = "You hit yourself! Game Over! Final Score: " + this.score;
         this.game_over = true;
+      }
+
+      // Movement controls are handled here instead of in the key-triggered buttons 
+      // because we want to allow the player to hold down the keys, which requires checking them every frame.
+      const pressed_keys = caller.controls.key_controls.actively_pressed_keys;
+      if (this.camera_follow_snake) {
+        const turn_speed = this.snake.speed / 15;
+
+        if (pressed_keys.has("ArrowLeft")) {
+          this.snake.setDirection(null, true, turn_speed);
+        }
+        if (pressed_keys.has("ArrowRight")) {
+          this.snake.setDirection(null, true, -turn_speed);
+        }
+      } else {
+        if (pressed_keys.has("ArrowUp")) {
+          this.snake.setDirection(vec3(0, 0, -1), false);
+        }
+        if (pressed_keys.has("ArrowDown")) {
+          this.snake.setDirection(vec3(0, 0, 1), false);
+        }
+        if (pressed_keys.has("ArrowLeft")) {
+          this.snake.setDirection(vec3(-1, 0, 0), false);
+        }
+        if (pressed_keys.has("ArrowRight")) {
+          this.snake.setDirection(vec3(1, 0, 0), false);
+        }
       }
     } else {
       const gameOverUI = document.getElementById("game-over-screen");
@@ -484,19 +524,19 @@ export class Game extends GameBase
     // buttons with key bindings for affecting this scene, and live info readouts.
     this.control_panel.innerHTML += "Snake Controls:";
     this.new_line();
-    this.key_triggered_button("Forward", ["ArrowUp"], () => this.snake.setDirection(vec3(0, 0, -1), this.camera_follow_snake, false));
-    this.new_line();
-    this.key_triggered_button("Backward", ["ArrowDown"], () => this.snake.setDirection(vec3(0, 0, 1), this.camera_follow_snake, false));
-    this.new_line();
-    this.key_triggered_button("Left", ["ArrowLeft"], () => this.snake.setDirection(vec3(-1, 0, 0), this.camera_follow_snake, true));
-    this.new_line();
-    this.key_triggered_button("Right", ["ArrowRight"], () => this.snake.setDirection(vec3(1, 0, 0), this.camera_follow_snake, false));
-    this.new_line();
+    // this.key_triggered_button("Forward", ["ArrowUp"], () => this.snake.setDirection(vec3(0, 0, -1), this.camera_follow_snake, false));
+    // this.new_line();
+    // this.key_triggered_button("Backward", ["ArrowDown"], () => this.snake.setDirection(vec3(0, 0, 1), this.camera_follow_snake, false));
+    // this.new_line();
+    // this.key_triggered_button("Left", ["ArrowLeft"], () => this.snake.setDirection(vec3(-1, 0, 0), this.camera_follow_snake, true));
+    // this.new_line();
+    // this.key_triggered_button("Right", ["ArrowRight"], () => this.snake.setDirection(vec3(1, 0, 0), this.camera_follow_snake, false));
+    // this.new_line();
     this.key_triggered_button("Reset", ["r"], function() {
       this.game_over = false;
       const forward_speed = 2.0;
-      const wave_freq = 5.0;
-      const wave_amp = 0.4;
+      const wave_freq = 1;
+      const wave_amp = 0.1;
       const t0 = 0;
 
       const head0 = vec3(
