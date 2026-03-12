@@ -91,9 +91,9 @@ const Snake = class Snake {
     this.speed = starting_speed;
 
     // snake params:
-    this.particle_width = 0.2;
+    this.particle_width = 0.4;
     this.particle_height = 0.2;
-    this.particle_length = 0.4;
+    this.particle_length = 0.3;
 
     for (let i = 0; i < this.length; i++) {
       // start at the first spline point
@@ -296,9 +296,44 @@ const Snake = class Snake {
       );
 
       matrix = matrix.times(rotation)
+                     .times(Mat4.rotation(-Math.PI / 2, 0, 1, 0))
                      .times(Mat4.scale(this.particle_width, this.particle_height, this.particle_length));
 
-      shapes.ball.draw(caller, uniforms, matrix, materials.particle);
+      if (i==0) {
+        const shape = shapes.snake_head_start;
+        const material = materials.snake_head_start;
+        matrix = matrix.times(Mat4.scale(0.9, 0.9, 0.9));
+        shape.draw(caller, uniforms, matrix, material);        
+      }
+      else if (i == 1) {
+        const shape = shapes.snake_head_end;
+        const material = materials.snake_head_end;
+        matrix = matrix.times(Mat4.rotation(Math.PI, 0, 1, 0));
+        matrix = matrix.times(Mat4.scale(0.8, 0.8, 0.8));
+        shape.draw(caller, uniforms, matrix, material);
+      }
+      else if (i == this.particles.length - 1) {
+        const shape = shapes.snake_tail_end;
+        const material = materials.snake_tail_start;
+        matrix = matrix.times(Mat4.rotation(Math.PI, 1, 0, 0))
+                        .times(Mat4.translation(0, 0.6, 0));
+        shape.draw(caller, uniforms, matrix, material);
+      }
+      else if (i == this.particles.length - 2) {
+        const shape = shapes.snake_tail_start;
+        const material = materials.snake_tail_end;
+        matrix = matrix.times(Mat4.rotation(Math.PI, 1, 0, 0))
+                        .times(Mat4.translation(0, 0.3, 0));
+        shape.draw(caller, uniforms, matrix, material);
+      }
+      else {
+        const shape = shapes.snake_body;
+        const material = materials.snake_body;
+        matrix = matrix.times(Mat4.scale(1.2, 1, 1));
+        shape.draw(caller, uniforms, matrix, material);
+      }
+      
+      // shapes.ball.draw(caller, uniforms, matrix, materials.particle);
     }
   }
 }
