@@ -156,14 +156,12 @@ const Snake = class Snake {
 
   setDirection(dir, camera_follow_snake, going_left) {
     if (camera_follow_snake) {
-      if (this.current_direction[0] == 1 || this.current_direction[0] == -1) {
-        if (going_left) this.target_direction = vec3(0, 0, -this.current_direction[0]);
-        else this.target_direction = vec3(0, 0, this.current_direction[0]);
-      }
-      else {
-        if (going_left) this.target_direction = vec3(this.current_direction[2], 0, 0);
-        else this.target_direction = vec3(-this.current_direction[2], 0, 0);
-      }
+      const turn_amount = 0.2;
+      const delta_angle = (going_left ? turn_amount : -turn_amount);
+
+      const current_angle = Math.atan2(this.current_direction[0], this.current_direction[2]);
+      const new_angle = current_angle + delta_angle;
+      this.target_direction = vec3(Math.sin(new_angle), 0, Math.cos(new_angle)).normalized();
     }
     else {
       const opposite = this.current_direction.times(-1);
