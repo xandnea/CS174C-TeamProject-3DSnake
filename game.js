@@ -94,6 +94,24 @@ const GameBase = defs.GameBase =
         this.materials.tree1 = { shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("assets/obstacles/tree1_texture.png") };
         this.materials.rock = { shader: phong, ambient: 0.4, diffusivity: 0.9, specularity: 0.1, color: color(0.5, 0.5, 0.5, 1) };
 
+        // Cloud material
+        this.materials.cloud = {
+          shader: phong,
+          ambient: 0.95,
+          diffusivity: 0.2,
+          specularity: 0.0,
+          color: color(1, 1, 1, 1)
+        };
+
+        // Far cloud material
+        this.materials.far_cloud = {
+          shader: phong,
+          ambient: 0.95,
+          diffusivity: 0.1,
+          specularity: 0.0,
+          color: color(1, 1, 1, 0.35)
+        };
+
         this.ball_location = vec3(1, 1, 1);
         this.ball_radius = 0.25;
 
@@ -135,12 +153,193 @@ const GameBase = defs.GameBase =
         this.snake = new Snake(this.starting_length, starting_speed, particle_distance, head0);
 
         this.accumulated_time = 0;
+
+        // Cloud settings
+        this.moving_clouds = [
+          {
+            angle_offset: 0.0,
+            height: 9.5,
+            radius_x: 26,
+            radius_z: 18,
+            speed: 0.030,
+            wobble: 0.20,
+            scale: 1.5,
+            cluster_type: 0,
+            center: vec3(0, 0, 0)
+          },
+          {
+            angle_offset: 1.4,
+            height: 11.0,
+            radius_x: 31,
+            radius_z: 22,
+            speed: 0.022,
+            wobble: 0.15,
+            scale: 1.9,
+            cluster_type: 1,
+            center: vec3(2, 0, -3)
+          },
+          {
+            angle_offset: 2.7,
+            height: 8.7,
+            radius_x: 20,
+            radius_z: 28,
+            speed: 0.027,
+            wobble: 0.18,
+            scale: 1.4,
+            cluster_type: 2,
+            center: vec3(-4, 0, 1)
+          },
+          {
+            angle_offset: 4.2,
+            height: 10.5,
+            radius_x: 36,
+            radius_z: 16,
+            speed: 0.018,
+            wobble: 0.12,
+            scale: 2.0,
+            cluster_type: 3,
+            center: vec3(3, 0, 4)
+          },
+          {
+            angle_offset: 5.1,
+            height: 9.0,
+            radius_x: 24,
+            radius_z: 24,
+            speed: 0.025,
+            wobble: 0.14,
+            scale: 1.7,
+            cluster_type: 1,
+            center: vec3(-2, 0, -5)
+          },
+          {
+            angle_offset: 3.5,
+            height: 12.0,
+            radius_x: 42,
+            radius_z: 30,
+            speed: 0.014,
+            wobble: 0.10,
+            scale: 2.2,
+            cluster_type: 4,
+            center: vec3(0, 0, 0)
+          }
+        ];
+
+        this.stationary_clouds = [
+          { pos: vec3(-70, 18, -58), scale: 4.5, cluster_type: 4 },
+          { pos: vec3(82, 20, -52), scale: 5.2, cluster_type: 3 },
+          { pos: vec3(-88, 22, 60), scale: 5.8, cluster_type: 2 },
+          { pos: vec3(95, 19, 70), scale: 4.9, cluster_type: 1 },
+          { pos: vec3(0, 24, -92), scale: 6.0, cluster_type: 4 },
+          { pos: vec3(-40, 21, 96), scale: 5.0, cluster_type: 0 },
+          { pos: vec3(48, 23, 102), scale: 5.6, cluster_type: 2 }
+        ];
+      }
+
+      draw_cloud_cluster(caller, uniforms, center, scale_factor, cluster_type, material)
+      {
+        let puffs = [];
+
+        if (cluster_type === 0) {
+          puffs = [
+            { x: 0.0,  y: 0.0,  z: 0.0,  sx: 2.5, sy: 1.2, sz: 1.4 },
+            { x: 2.0,  y: 0.4,  z: 0.2,  sx: 1.9, sy: 1.0, sz: 1.2 },
+            { x: -1.9, y: 0.2,  z: -0.1, sx: 1.8, sy: 1.0, sz: 1.1 },
+            { x: 0.3,  y: 0.7,  z: 0.0,  sx: 1.7, sy: 1.05, sz: 1.15 }
+          ];
+        }
+        else if (cluster_type === 1) {
+          puffs = [
+            { x: -2.6, y: 0.0,  z: 0.1,  sx: 1.6, sy: 0.9, sz: 1.0 },
+            { x: -0.8, y: 0.5,  z: 0.0,  sx: 2.1, sy: 1.2, sz: 1.3 },
+            { x: 1.2,  y: 0.6,  z: -0.2, sx: 2.3, sy: 1.1, sz: 1.4 },
+            { x: 3.1,  y: 0.1,  z: 0.2,  sx: 1.7, sy: 0.9, sz: 1.0 },
+            { x: 0.8,  y: 1.0,  z: 0.1,  sx: 1.4, sy: 0.9, sz: 1.0 }
+          ];
+        }
+        else if (cluster_type === 2) {
+          puffs = [
+            { x: 0.0,  y: 0.0,  z: 0.0,  sx: 2.8, sy: 1.0, sz: 1.1 },
+            { x: -2.1, y: 0.1,  z: -0.3, sx: 1.6, sy: 0.8, sz: 0.9 },
+            { x: 2.2,  y: 0.15, z: 0.2,  sx: 1.7, sy: 0.85, sz: 0.95 },
+            { x: -0.7, y: 0.55, z: 0.0,  sx: 1.3, sy: 0.9, sz: 1.0 },
+            { x: 0.9,  y: 0.5,  z: 0.0,  sx: 1.25, sy: 0.85, sz: 0.95 }
+          ];
+        }
+        else if (cluster_type === 3) {
+          puffs = [
+            { x: -3.0, y: 0.1,  z: 0.0,  sx: 1.5, sy: 0.85, sz: 0.95 },
+            { x: -1.3, y: 0.8,  z: 0.1,  sx: 1.8, sy: 1.0, sz: 1.1 },
+            { x: 0.6,  y: 1.0,  z: -0.1, sx: 2.2, sy: 1.15, sz: 1.25 },
+            { x: 2.7,  y: 0.5,  z: 0.2,  sx: 1.9, sy: 1.0, sz: 1.15 },
+            { x: 4.2,  y: 0.0,  z: 0.0,  sx: 1.4, sy: 0.8, sz: 0.9 }
+          ];
+        }
+        else {
+          puffs = [
+            { x: -3.4, y: 0.2,  z: -0.2, sx: 1.7, sy: 0.95, sz: 1.0 },
+            { x: -1.6, y: 0.9,  z: 0.0,  sx: 2.0, sy: 1.1, sz: 1.2 },
+            { x: 0.2,  y: 1.15, z: 0.0,  sx: 2.4, sy: 1.2, sz: 1.35 },
+            { x: 2.3,  y: 0.9,  z: 0.1,  sx: 2.0, sy: 1.05, sz: 1.2 },
+            { x: 4.1,  y: 0.25, z: 0.0,  sx: 1.6, sy: 0.9, sz: 1.0 },
+            { x: 0.6,  y: 1.8,  z: 0.0,  sx: 1.5, sy: 0.95, sz: 1.05 }
+          ];
+        }
+
+        for (const puff of puffs) {
+          const puff_transform =
+            Mat4.translation(
+              center[0] + puff.x * scale_factor,
+              center[1] + puff.y * scale_factor,
+              center[2] + puff.z * scale_factor
+            ).times(
+              Mat4.scale(
+                puff.sx * scale_factor,
+                puff.sy * scale_factor,
+                puff.sz * scale_factor
+              )
+            );
+
+          this.shapes.ball.draw(caller, uniforms, puff_transform, material);
+        }
+      }
+
+      draw_clouds(caller, uniforms)
+      {
+        const t = uniforms.animation_time / 1000;
+
+        for (const cloud of this.moving_clouds) {
+          const angle = t * cloud.speed + cloud.angle_offset;
+
+          const x = cloud.center[0] + cloud.radius_x * Math.cos(angle);
+          const z = cloud.center[2] + cloud.radius_z * Math.sin(angle * 0.9 + cloud.angle_offset * 0.2);
+          const y = cloud.height + cloud.wobble * Math.sin(angle * 2.1);
+
+          this.draw_cloud_cluster(
+            caller,
+            uniforms,
+            vec3(x, y, z),
+            cloud.scale,
+            cloud.cluster_type,
+            this.materials.cloud
+          );
+        }
+
+        for (const cloud of this.stationary_clouds) {
+          this.draw_cloud_cluster(
+            caller,
+            uniforms,
+            cloud.pos,
+            cloud.scale,
+            cloud.cluster_type,
+            this.materials.far_cloud
+          );
+        }
       }
 
       render_animation( caller )
       {                                                
         // set a background color for the canvas (red, green, blue, alpha)
-        caller.context.clearColor(0.1, 0.4, 0.1, 0.35); 
+        caller.context.clearColor(0.53, 0.81, 0.98, 1.0);
 
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
         if( !caller.controls )
@@ -157,7 +356,7 @@ const GameBase = defs.GameBase =
           // !!! Camera changed here
           Shader.assign_camera( Mat4.look_at (vec3 (0, 34, 0), vec3 (0, 0, 0), vec3 (0, 0, -1)), this.uniforms );
         }
-        this.uniforms.projection_transform = Mat4.perspective( Math.PI/4, caller.width/caller.height, 1, 100 );
+        this.uniforms.projection_transform = Mat4.perspective( Math.PI/4, caller.width/caller.height, 1, 180 );
 
         // *** Lights: *** Values of vector or point lights.  They'll be consulted by
         // the shader when coloring shapes.  See Light's class definition for inputs.
@@ -197,6 +396,9 @@ export class Game extends GameBase
       // animation_time is the total time since the program started, in milliseconds
       // animation_delta_time is the time since the LAST frame (usually ~16ms)
     let dt = this.uniforms.animation_delta_time / 1000;
+
+    // Clouds:
+    this.draw_clouds(caller, this.uniforms);
 
     // Playing field:
     this.board.draw(caller, this.uniforms, this.shapes, this.materials);
