@@ -134,6 +134,8 @@ const GameBase = defs.GameBase =
         this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3, this.obstacles.instances);
         this.snake = new Snake(this.starting_length, starting_speed, particle_distance, head0);
 
+        this.scoreElement = document.getElementById("score-box");
+
         this.accumulated_time = 0;
       }
 
@@ -232,6 +234,12 @@ export class Game extends GameBase
         this.snake.addSegment();
         this.snake.increaseSpeed(0.5); // increase forward speed slightly every time we eat a collectible, can be tweaked
         length++;
+
+        if (this.scoreElement) {
+          this.scoreElement.classList.remove("ui-pulse");
+          void this.scoreElement.offsetWidth;
+          this.scoreElement.classList.add("ui-pulse");
+        }
       }
 
       if (this.obstacles.checkCollision(head_pos)) {
