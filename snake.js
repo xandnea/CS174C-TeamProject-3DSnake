@@ -226,6 +226,31 @@ const Snake = class Snake {
     return false;
   }
 
+  resolveObstacleCollisions(obstacles) {
+    const instances = obstacles.instances;
+
+    // only check collisions for body segments, not head
+    for (let i = 1; i < this.length; i++) {
+      const p = this.particles[i];
+
+      for (let obs of instances) {
+        const diff = p.pos.minus(obs.pos);
+        const dist = diff.norm();
+
+        if (dist < obs.radius + this.particle_width / 2) {
+          // calculate push out vector
+          const push_dir = diff.normalized();
+          const push_dist = obs.radius + (this.particle_width / 2) - dist;
+          const push_vec = push_dir.times(push_dist);
+          p.pos = p.pos.plus(push_vec);
+
+          // dampen velocity
+          p.vel = p.vel.times(0.5);
+        }
+      }
+    }
+  }
+
   addSegment() {
     const last = this.particles[this.length - 1];
     const new_pos = last.pos.minus((last.dir).times(this.node_distance));

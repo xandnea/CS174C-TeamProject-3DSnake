@@ -415,6 +415,7 @@ export class Game extends GameBase
       let timestep = 0;
       while (timestep < dt) {
         this.snake.update(this.t, dt);
+        this.snake.resolveObstacleCollisions(this.obstacles);
         timestep++;
       }
       //this.snake.update(t, dt);  // optional animation (sine forward motion)
