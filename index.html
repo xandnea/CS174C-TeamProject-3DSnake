@@ -63,6 +63,58 @@
             animation: border-pulse 0.4s ease-out;
         }
 
+        #controls-visualizer {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .key-layout {
+            display: grid;
+            gap: 20px;
+        }
+
+        #layout-4way {
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(2, 100px);
+        }
+
+        #layout-2way {
+            grid-template-columns: repeat(2, 200px);
+        }
+
+        .key {
+            width: 100%;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 30px;
+            transition: all 0.1s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        /* The "Pop" effect */
+        .key.active {
+            background: rgba(0, 255, 127, 0.3); /* Emerald glow */
+            border-color: #00ff7f;
+            color: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 255, 127, 0.6);
+        }
+
+        .spacer { background: none; border: none; backdrop-filter: none; }
+
         #game-over-screen {
             font-family: "Courier New", Courier, monospace;
             position: fixed;
@@ -132,6 +184,22 @@
     <div id="score-box">
         SCORE: <span id="current-score">0</span><br>
         SPEED: <span id="current-speed">0</span>
+    </div>
+
+    <div id="controls-visualizer">
+        <div id="layout-4way" class="key-layout">
+            <div class="key spacer"></div>
+            <div id="key-Up" class="key">⇧</div>
+            <div class="key spacer"></div>
+            <div id="key-Left" class="key">⇦</div>
+            <div id="key-Down" class="key">⇩</div>
+            <div id="key-Right" class="key">⇨</div>
+        </div>
+
+        <div id="layout-2way" class="key-layout" style="display: none;">
+            <div id="key-Left-2" class="key">◀ LEFT</div>
+            <div id="key-Right-2" class="key">RIGHT ▶</div>
+        </div>
     </div>
 </div>
 

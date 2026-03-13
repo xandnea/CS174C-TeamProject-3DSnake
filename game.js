@@ -424,6 +424,8 @@ export class Game extends GameBase
     // Playing field:
     this.board.draw(caller, this.uniforms, this.shapes, this.materials);
     this.score = this.collectibles.score;
+
+    // UI
     if (!this.game_over) {
       document.getElementById("current-score").textContent = this.score;
       document.getElementById("current-speed").textContent = this.snake.speed.toFixed(1);
@@ -483,27 +485,70 @@ export class Game extends GameBase
       // Movement controls are handled here instead of in the key-triggered buttons 
       // because we want to allow the player to hold down the keys, which requires checking them every frame.
       const pressed_keys = caller.controls.key_controls.actively_pressed_keys;
+      const layout4 = document.getElementById("layout-4way");
+      const layout2 = document.getElementById("layout-2way");
+
+      // Reset all keys to inactive
+      const allKeys = ["Up", "Down", "Left", "Right"];
+      allKeys.forEach(k => {
+        const el4way = document.getElementById(`key-${k}`);
+        if (el4way) el4way.classList.remove("active");
+      });
+      // Special handling for the 2-way layout IDs
+      const keyLeft2 = document.getElementById("key-Left-2");
+      const keyRight2 = document.getElementById("key-Right-2");
+      if (keyLeft2) keyLeft2.classList.remove("active");
+      if (keyRight2) keyRight2.classList.remove("active");
+
+      // Highlight actively pressed keys
+      for (let key of pressed_keys) {
+        let suffix = key.replace("Arrow", ""); // e.g., "ArrowLeft" -> "Left"
+          
+        // Highlight 4-way layout
+        const el4 = document.getElementById(`key-${suffix}`);
+        if (el4) el4.classList.add("active");
+
+        // Highlight 2-way layout
+        if (suffix === "Left" && keyLeft2) keyLeft2.classList.add("active");
+        if (suffix === "Right" && keyRight2) keyRight2.classList.add("active");
+      }
+
+      // --- Movement Logic with Switch Statements ---
       if (this.camera_follow_snake) {
+        layout4.style.display = "none";
+        layout2.style.display = "grid";
+
         const turn_speed = this.snake.speed / 15;
 
-        if (pressed_keys.has("ArrowLeft")) {
-          this.snake.setDirection(null, true, turn_speed);
-        }
-        if (pressed_keys.has("ArrowRight")) {
-          this.snake.setDirection(null, true, -turn_speed);
+        for (let key of pressed_keys) {
+          switch (key) {
+            case "ArrowLeft":
+              this.snake.setDirection(null, true, turn_speed);
+              break;
+            case "ArrowRight":
+              this.snake.setDirection(null, true, -turn_speed);
+              break;
+            }
         }
       } else {
-        if (pressed_keys.has("ArrowUp")) {
-          this.snake.setDirection(vec3(0, 0, -1), false);
-        }
-        if (pressed_keys.has("ArrowDown")) {
-          this.snake.setDirection(vec3(0, 0, 1), false);
-        }
-        if (pressed_keys.has("ArrowLeft")) {
-          this.snake.setDirection(vec3(-1, 0, 0), false);
-        }
-        if (pressed_keys.has("ArrowRight")) {
-          this.snake.setDirection(vec3(1, 0, 0), false);
+        layout4.style.display = "grid";
+        layout2.style.display = "none";
+
+        for (let key of pressed_keys) {
+          switch (key) {
+            case "ArrowUp":
+              this.snake.setDirection(vec3(0, 0, -1), false);
+              break;
+            case "ArrowDown":
+              this.snake.setDirection(vec3(0, 0, 1), false);
+              break;
+            case "ArrowLeft":
+              this.snake.setDirection(vec3(-1, 0, 0), false);
+              break;
+            case "ArrowRight":
+              this.snake.setDirection(vec3(1, 0, 0), false);
+              break;
+          }
         }
       }
     } else {
