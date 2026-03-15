@@ -115,42 +115,65 @@
 
         .spacer { background: none; border: none; backdrop-filter: none; }
 
-        #game-over-screen {
+        #game-over-screen, #pause-screen {
             font-family: "Courier New", Courier, monospace;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 40px;
+
+            /* Asthetic from Score Box */
+            background-color: rgba(30, 30, 30, 0.85);
+            border: 3px dashed white;
+            border-top: 10px solid rgb(255, 55, 0);
             border-radius: 20px;
+
+            padding: 60px 80px;
             text-align: center;
             z-index: 200;
-            display: none;
+            display: none; /* hidden by default */
+            min-width: 400px;
+        }
+
+        #game-over-text, #pause-text {
+            font-size: 60px;
+            margin: 0 0 40px 0; /* Pushes text UP and creates space below */
+            color: white;
+            font-weight: bold;
         }
 
         #final-score-text {
-            font-size: 24px;
+            font-size: 34px;
             margin: 20px 0;
+            color: white;
         }
 
-        #end-game-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        #restart-button, #quit-button {
-            padding: 10px 20px;
+        .menu-button {
+            padding: 15px 25px;
             font-size: 18px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             background-color: rgb(43, 255, 0);
             color: black;
             font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.1s ease;
+        }
+
+        .menu-button:hover {
+            transform: scale(1.05);
+        }
+
+        #end-game-buttons, #pause-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            gap: 40px; 
+        }
+
+        .blurred {
+            filter: blur(8px);
+            transition: filter 0.3s ease;
         }
 
         /* Spacer: for pushing the controls down */
@@ -207,8 +230,16 @@
     <h1 id="game-over-text">GAME OVER</h1>
     <p id="final-score-text">Your final score: <span id="final-score">0</span></p>
     <div id="end-game-buttons">
-        <button id="restart-button" onclick="window.location.reload()">Restart Game</button>
-        <button id="quit-button" onclick="window.close()">Quit</button>
+        <button id="restart-button" class="menu-button" onclick="window.location.reload()">Restart Game</button>
+        <button id="quit-button" class="menu-button" onclick="window.close()">Quit</button>
+    </div>
+</div>
+
+<div id="pause-screen">
+    <h1 id="pause-text">PAUSED</h1>
+    <div id="pause-buttons">
+        <button id="resume-button" class="menu-button">Resume</button>
+        <button class="menu-button" onclick="window.close()">Quit</button>
     </div>
 </div>
 

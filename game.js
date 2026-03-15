@@ -141,6 +141,7 @@ const GameBase = defs.GameBase =
         // Current default setup has 3 collectibles on screen at once
         // Also I picked the radius at random
         this.game_over = false;
+        this.paused = false;
         this.score = 0;
         // Spawn head at the same place the animation wants at t=0
         const starting_speed = 2.0;
@@ -426,13 +427,33 @@ export class Game extends GameBase
     this.score = this.collectibles.score;
 
     // UI
-    if (!this.game_over) {
-      document.getElementById("current-score").textContent = this.score;
-      document.getElementById("current-speed").textContent = this.snake.speed.toFixed(1);
+    const pauseUI = document.getElementById("pause-screen");
+    const gameOverUI = document.getElementById("game-over-screen");
+    const gameCanvas = document.querySelector("canvas");
+    const uiLayer = document.getElementById("ui-layer");
+
+    const isMenuOpen = (this.paused || this.game_over);
+
+    // Toggle Blur
+    if (isMenuOpen) {
+        gameCanvas?.classList.add("blurred");
+        uiLayer?.classList.add("blurred");
+    } else {
+        gameCanvas?.classList.remove("blurred");
+        uiLayer?.classList.remove("blurred");
     }
 
+    // Toggle Pause Screen
+    if (this.paused && !this.game_over) {
+        pauseUI.style.display = "block";
+    } else {
+        pauseUI.style.display = "none";
+    }
+
+    document.getElementById("resume-button").onclick = () => { this.paused = false; };
+
     // Snake:
-    if (!this.game_over) {
+    if (!this.game_over && !this.paused) {
       while (this.accumulator < dt_frame) {
         this.snake.update(this.t, this.dt);
         this.snake.resolveObstacleCollisions(this.obstacles);
@@ -552,10 +573,11 @@ export class Game extends GameBase
         }
       }
     } else {
-      const gameOverUI = document.getElementById("game-over-screen");
-      if (gameOverUI && gameOverUI.style.display != "flex") {
-        gameOverUI.style.display = "block";
-        document.getElementById("final-score").textContent = this.score;
+      if (this.game_over) {
+        if (gameOverUI && gameOverUI.style.display != "flex") {
+          gameOverUI.style.display = "block";
+          document.getElementById("final-score").textContent = this.score;
+        }
       }
     }
 
@@ -593,6 +615,10 @@ export class Game extends GameBase
       // 5 particles, spacing 0.6
       this.snake = new Snake(6, 0.6, head0);
       this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3);
+    });
+    this.new_line();
+    this.key_triggered_button("Pause", ["p"], () => {
+      this.paused = !this.paused;
     });
     this.new_line();
     this.key_triggered_button("Top-down view", ["1"], () => {
