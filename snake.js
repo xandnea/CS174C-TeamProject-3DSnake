@@ -304,7 +304,7 @@ const Snake = class Snake {
         const shape = shapes.snake_head_end;
         const material = materials.snake_head_end;
         matrix = matrix.times(Mat4.rotation(Math.PI, 0, 1, 0));
-        matrix = matrix.times(Mat4.scale(0.8, 0.8, 0.8));
+        matrix = matrix.times(Mat4.scale(0.85, 0.85, 0.85));
         shape.draw(caller, uniforms, matrix, material);
       }
       else if (i == this.particles.length - 1) {

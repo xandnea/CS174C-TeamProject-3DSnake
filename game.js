@@ -80,6 +80,8 @@ const GameBase = defs.GameBase =
           'snake_body': new defs.Shape_From_File("assets/snake/snake_body.obj"),
           'snake_tail_start': new defs.Shape_From_File("assets/snake/snake_tail_start.obj"),
           'snake_tail_end': new defs.Shape_From_File("assets/snake/snake_tail_end.obj"),
+
+          'apple' : new defs.Shape_From_File("assets/apple.obj"),
          };
 
         // *** Materials: ***  A "material" used on individual shapes specifies all fields
@@ -98,11 +100,13 @@ const GameBase = defs.GameBase =
         this.materials.collect = { shader: phong, ambient: 0.8, diffusivity: 0.4, specularity: 0.0, color: color(0.78, 0.31, 0.26, 1)}; // TODO definitely change this
         this.materials.tree1 = { shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("assets/obstacles/tree1_texture.png") };
         this.materials.rock = { shader: phong, ambient: 0.4, diffusivity: 0.9, specularity: 0.1, color: color(0.5, 0.5, 0.5, 1) };
+        // todo: snake and apple textures
         this.materials.snake_head_start = {shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( 0,0,1,1 )};
         this.materials.snake_head_end = {shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( 0,0,1,1 )};
         this.materials.snake_body = {shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( 0,0,1,1 )};
         this.materials.snake_tail_start = {shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( 0,0,1,1 )};
         this.materials.snake_tail_end = {shader: phong, ambient: .2, diffusivity: 1, specularity: .5, color: color( 0,0,1,1 )};
+        this.materials.apple = { shader: phong, ambient: 0.8, diffusivity: 0.4, specularity: 0.0, color: color(0.78, 0.31, 0.26, 1)};
         // Cloud material
         this.materials.cloud = {
           shader: phong,
