@@ -73,7 +73,7 @@ export const Collectible = class Collectible {
     draw(webgl_manager, uniforms, shapes, materials) {
         for (const i of this.instances) {
             const collect_transform = Mat4.translation(i[0], i[1], i[2]).times(Mat4.scale(this.r, this.r, this.r));
-            shapes.ball.draw(webgl_manager, uniforms, collect_transform, { ...materials.collect, color: color(0.78, 0.31, 0.26, 1)});
+            shapes.apple.draw(webgl_manager, uniforms, collect_transform, materials.collect);
         }
         for (const p of this.particles) {
             p.draw(webgl_manager, uniforms, shapes, materials);
