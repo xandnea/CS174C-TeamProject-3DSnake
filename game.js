@@ -81,7 +81,7 @@ const GameBase = defs.GameBase =
           'snake_tail_start': new defs.Shape_From_File("assets/snake/snake_tail_start.obj"),
           'snake_tail_end': new defs.Shape_From_File("assets/snake/snake_tail_end.obj"),
 
-          'apple': new defs.Shape_From_File("assets/Apple.obj"),
+          'apple' : new defs.Shape_From_File("assets/apple.obj"),
          };
 
         // *** Materials: ***  A "material" used on individual shapes specifies all fields
@@ -123,6 +123,15 @@ const GameBase = defs.GameBase =
           color: color(1, 1, 1, 0.35)
         };
 
+        // Sun material
+        this.materials.sun = {
+          shader: phong,
+          ambient: 1.0,
+          diffusivity: 0.0,
+          specularity: 0.0,
+          color: color(1.0, 0.92, 0.55, 1)
+        };
+
         this.ball_location = vec3(1, 1, 1);
         this.ball_radius = 0.25;
 
@@ -143,6 +152,7 @@ const GameBase = defs.GameBase =
         // Current default setup has 3 collectibles on screen at once
         // Also I picked the radius at random
         this.game_over = false;
+        this.paused = false;
         this.score = 0;
         // Spawn head at the same place the animation wants at t=0
         const starting_speed = 2.0;
@@ -256,6 +266,42 @@ const GameBase = defs.GameBase =
           { pos: vec3(-40, 21, 96), scale: 5.0, cluster_type: 0 },
           { pos: vec3(48, 23, 102), scale: 5.6, cluster_type: 2 }
         ];
+
+        // Sun settings
+        this.sun_center = vec3(0, 0, 0);
+        this.sun_distance = 40;
+        this.sun_height = 17;
+        this.sun_vertical_range = 6;
+        this.sun_radius = 3.8;
+        this.sun_speed = 0.0008;
+        this.sun_low_color = color(1.0, 0.55, 0.25, 1);
+        this.sun_high_color = color(1.0, 0.96, 0.82, 1);
+        this.fill_light_color = color(0.35, 0.42, 0.5, 1);
+        this.sun_position = vec4(0, this.sun_height, 0, 1.0);
+        this.sun_color = this.sun_high_color;
+      }
+
+      interpolate_color(c1, c2, t)
+      {
+        const clamped_t = Math.max(0, Math.min(1, t));
+        return color(
+          c1[0] + (c2[0] - c1[0]) * clamped_t,
+          c1[1] + (c2[1] - c1[1]) * clamped_t,
+          c1[2] + (c2[2] - c1[2]) * clamped_t,
+          c1[3] + (c2[3] - c1[3]) * clamped_t
+        );
+      }
+
+      draw_sun(caller, uniforms, sun_position)
+      {
+        const sun_transform =
+          Mat4.translation(sun_position[0], sun_position[1], sun_position[2])
+            .times(Mat4.scale(this.sun_radius, this.sun_radius, this.sun_radius));
+
+        this.shapes.ball.draw(caller, uniforms, sun_transform, {
+          ...this.materials.sun,
+          color: this.sun_color
+        });
       }
 
       draw_cloud_cluster(caller, uniforms, center, scale_factor, cluster_type, material)
@@ -389,8 +435,35 @@ const GameBase = defs.GameBase =
         // const light_position = Mat4.rotation( angle,   1,0,0 ).times( vec4( 0,-1,1,0 ) ); !!!
         // !!! Light changed here
         //const light_position = vec4(20 * Math.cos(angle), 20,  20 * Math.sin(angle), 1.0);
-        const light_position = vec4(0, 100, 0, 0);
-        this.uniforms.lights = [ defs.Phong_Shader.light_source( light_position, color( 1,1,1,1 ), 1000000 ) ];
+
+        const sun_angle = t * this.sun_speed;
+
+        const sun_x = this.sun_center[0] + this.sun_distance * Math.cos(sun_angle);
+        const sun_y = this.sun_height + this.sun_vertical_range * Math.sin(sun_angle);
+        const sun_z = this.sun_center[2] + this.sun_distance * Math.sin(sun_angle);
+
+        this.sun_position = vec4(sun_x, sun_y, sun_z, 1.0);
+
+        const min_sun_y = this.sun_height - this.sun_vertical_range;
+        const max_sun_y = this.sun_height + this.sun_vertical_range;
+        const sun_height_t = (sun_y - min_sun_y) / (max_sun_y - min_sun_y);
+
+        this.sun_color = this.interpolate_color(this.sun_low_color, this.sun_high_color, sun_height_t);
+
+        const fill_pos = vec4(-40, 30, -25, 1.0);
+
+        this.uniforms.lights = [
+          defs.Phong_Shader.light_source(
+            this.sun_position,
+            this.sun_color,
+            200000
+          ),
+          defs.Phong_Shader.light_source(
+            fill_pos,
+            this.fill_light_color,
+            12000
+          )
+        ];
 
         // draw axis arrows.
         //this.shapes.axis.draw(caller, this.uniforms, Mat4.identity(), this.materials.rgb);
@@ -415,6 +488,13 @@ export class Game extends GameBase
     // Call the setup code that we left inside the base class:
     super.render_animation( caller );
 
+    // Draw visible sun
+    this.draw_sun(
+      caller,
+      this.uniforms,
+      vec3(this.sun_position[0], this.sun_position[1], this.sun_position[2])
+    );
+
     // Animation time: 
       // animation_time is the total time since the program started, in milliseconds
       // animation_delta_time is the time since the LAST frame (usually ~16ms)
@@ -426,13 +506,35 @@ export class Game extends GameBase
     // Playing field:
     this.board.draw(caller, this.uniforms, this.shapes, this.materials);
     this.score = this.collectibles.score;
-    if (!this.game_over) {
-      document.getElementById("current-score").textContent = this.score;
-      document.getElementById("current-speed").textContent = this.snake.speed.toFixed(1);
+
+    // UI
+    const pauseUI = document.getElementById("pause-screen");
+    const gameOverUI = document.getElementById("game-over-screen");
+    const gameCanvas = document.querySelector("canvas");
+    const uiLayer = document.getElementById("ui-layer");
+
+    const isMenuOpen = (this.paused || this.game_over);
+
+    // Toggle Blur
+    if (isMenuOpen) {
+        gameCanvas?.classList.add("blurred");
+        uiLayer?.classList.add("blurred");
+    } else {
+        gameCanvas?.classList.remove("blurred");
+        uiLayer?.classList.remove("blurred");
     }
 
+    // Toggle Pause Screen
+    if (this.paused && !this.game_over) {
+        pauseUI.style.display = "block";
+    } else {
+        pauseUI.style.display = "none";
+    }
+
+    document.getElementById("resume-button").onclick = () => { this.paused = false; };
+
     // Snake:
-    if (!this.game_over) {
+    if (!this.game_over && !this.paused) {
       while (this.accumulator < dt_frame) {
         this.snake.update(this.t, this.dt);
         this.snake.resolveObstacleCollisions(this.obstacles);
@@ -485,34 +587,78 @@ export class Game extends GameBase
       // Movement controls are handled here instead of in the key-triggered buttons 
       // because we want to allow the player to hold down the keys, which requires checking them every frame.
       const pressed_keys = caller.controls.key_controls.actively_pressed_keys;
+      const layout4 = document.getElementById("layout-4way");
+      const layout2 = document.getElementById("layout-2way");
+
+      // Reset all keys to inactive
+      const allKeys = ["Up", "Down", "Left", "Right"];
+      allKeys.forEach(k => {
+        const el4way = document.getElementById(`key-${k}`);
+        if (el4way) el4way.classList.remove("active");
+      });
+      // Special handling for the 2-way layout IDs
+      const keyLeft2 = document.getElementById("key-Left-2");
+      const keyRight2 = document.getElementById("key-Right-2");
+      if (keyLeft2) keyLeft2.classList.remove("active");
+      if (keyRight2) keyRight2.classList.remove("active");
+
+      // Highlight actively pressed keys
+      for (let key of pressed_keys) {
+        let suffix = key.replace("Arrow", ""); // e.g., "ArrowLeft" -> "Left"
+          
+        // Highlight 4-way layout
+        const el4 = document.getElementById(`key-${suffix}`);
+        if (el4) el4.classList.add("active");
+
+        // Highlight 2-way layout
+        if (suffix === "Left" && keyLeft2) keyLeft2.classList.add("active");
+        if (suffix === "Right" && keyRight2) keyRight2.classList.add("active");
+      }
+
+      // --- Movement Logic with Switch Statements ---
       if (this.camera_follow_snake) {
+        layout4.style.display = "none";
+        layout2.style.display = "grid";
+
         const turn_speed = this.snake.speed / 15;
 
-        if (pressed_keys.has("ArrowLeft")) {
-          this.snake.setDirection(null, true, turn_speed);
-        }
-        if (pressed_keys.has("ArrowRight")) {
-          this.snake.setDirection(null, true, -turn_speed);
+        for (let key of pressed_keys) {
+          switch (key) {
+            case "ArrowLeft":
+              this.snake.setDirection(null, true, turn_speed);
+              break;
+            case "ArrowRight":
+              this.snake.setDirection(null, true, -turn_speed);
+              break;
+            }
         }
       } else {
-        if (pressed_keys.has("ArrowUp")) {
-          this.snake.setDirection(vec3(0, 0, -1), false);
-        }
-        if (pressed_keys.has("ArrowDown")) {
-          this.snake.setDirection(vec3(0, 0, 1), false);
-        }
-        if (pressed_keys.has("ArrowLeft")) {
-          this.snake.setDirection(vec3(-1, 0, 0), false);
-        }
-        if (pressed_keys.has("ArrowRight")) {
-          this.snake.setDirection(vec3(1, 0, 0), false);
+        layout4.style.display = "grid";
+        layout2.style.display = "none";
+
+        for (let key of pressed_keys) {
+          switch (key) {
+            case "ArrowUp":
+              this.snake.setDirection(vec3(0, 0, -1), false);
+              break;
+            case "ArrowDown":
+              this.snake.setDirection(vec3(0, 0, 1), false);
+              break;
+            case "ArrowLeft":
+              this.snake.setDirection(vec3(-1, 0, 0), false);
+              break;
+            case "ArrowRight":
+              this.snake.setDirection(vec3(1, 0, 0), false);
+              break;
+          }
         }
       }
     } else {
-      const gameOverUI = document.getElementById("game-over-screen");
-      if (gameOverUI && gameOverUI.style.display != "flex") {
-        gameOverUI.style.display = "block";
-        document.getElementById("final-score").textContent = this.score;
+      if (this.game_over) {
+        if (gameOverUI && gameOverUI.style.display != "flex") {
+          gameOverUI.style.display = "block";
+          document.getElementById("final-score").textContent = this.score;
+        }
       }
     }
 
@@ -550,6 +696,10 @@ export class Game extends GameBase
       // 5 particles, spacing 0.6
       this.snake = new Snake(6, 0.6, head0);
       this.collectibles = new Collectible(0.3, this.board.x_bounds, this.board.z_bounds, 3);
+    });
+    this.new_line();
+    this.key_triggered_button("Pause", ["p"], () => {
+      this.paused = !this.paused;
     });
     this.new_line();
     this.key_triggered_button("Top-down view", ["1"], () => {

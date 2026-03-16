@@ -94,7 +94,7 @@ const Snake = class Snake {
     this.particle_width = 0.4;
     this.particle_height = 0.2;
     this.particle_length = 0.3;
-
+    this.head_rotation = 0;
     for (let i = 0; i < this.length; i++) {
       // start at the first spline point
       const pos = start_point.plus(vec3(0, 0, -i * node_distance));
@@ -122,7 +122,7 @@ const Snake = class Snake {
     const old_pos = this.particles.map(p => p.pos.copy());
       
     // Head target position is forward along current direction, plus a sine wave for slithering
-    const perpendicular_dir = vec3(this.current_direction[2], 0, this.current_direction[0]);
+    const perpendicular_dir = vec3(0, 1, 0).cross(this.current_direction).normalized();
     const path = this.particles[0].pos.plus(this.current_direction.times(this.speed * dt_frame));
     const lead_pos = path.plus(perpendicular_dir.times(wave_amp * Math.sin(t * wave_freq)));
     // Move head (kinematic)
@@ -291,40 +291,45 @@ const Snake = class Snake {
       );
 
       matrix = matrix.times(rotation)
-                     .times(Mat4.rotation(-Math.PI / 2, 0, 1, 0))
-                     .times(Mat4.scale(this.particle_width, this.particle_height, this.particle_length));
+                     .times(Mat4.rotation(-Math.PI / 2, 0, 1, 0));
 
       if (i==0) {
         const shape = shapes.snake_head_start;
         const material = materials.snake_head_start;
-        matrix = matrix.times(Mat4.scale(0.9, 0.9, 0.9));
-        shape.draw(caller, uniforms, matrix, material);        
+        const v = this.particles[1].pos.minus(p.pos).normalized();
+        const head_rotation = v.dot(x_axis);
+        matrix = matrix.times(Mat4.rotation(-head_rotation, 0, 1, 0))
+                      .times(Mat4.scale(0.9, 0.9, 0.9))
+                      .times(Mat4.scale(this.particle_width, this.particle_height, this.particle_length));
+        shape.draw(caller, uniforms, matrix, material);       
       }
       else if (i == 1) {
         const shape = shapes.snake_head_end;
         const material = materials.snake_head_end;
-        matrix = matrix.times(Mat4.rotation(Math.PI, 0, 1, 0));
-        matrix = matrix.times(Mat4.scale(0.8, 0.8, 0.8));
+        matrix = matrix.times(Mat4.rotation(Math.PI, 0, 1, 0))
+                        .times(Mat4.scale(this.particle_width * 0.85, this.particle_height * 0.85, this.particle_length * 0.85));
         shape.draw(caller, uniforms, matrix, material);
       }
       else if (i == this.particles.length - 1) {
         const shape = shapes.snake_tail_end;
         const material = materials.snake_tail_start;
         matrix = matrix.times(Mat4.rotation(Math.PI, 1, 0, 0))
-                        .times(Mat4.translation(0, 0.6, 0));
+                        .times(Mat4.translation(0, 0.13, 0))
+                        .times(Mat4.scale(this.particle_width, this.particle_height, this.particle_length));
         shape.draw(caller, uniforms, matrix, material);
       }
       else if (i == this.particles.length - 2) {
         const shape = shapes.snake_tail_start;
         const material = materials.snake_tail_end;
-        matrix = matrix.times(Mat4.rotation(Math.PI, 1, 0, 0))
+        matrix = matrix.times(Mat4.scale(this.particle_width, this.particle_height, this.particle_length))
+                        .times(Mat4.rotation(Math.PI, 1, 0, 0))
                         .times(Mat4.translation(0, 0.3, 0));
         shape.draw(caller, uniforms, matrix, material);
       }
       else {
         const shape = shapes.snake_body;
         const material = materials.snake_body;
-        matrix = matrix.times(Mat4.scale(1.2, 1, 1));
+        matrix = matrix.times(Mat4.scale(this.particle_width * 1.2, this.particle_height, this.particle_length));
         shape.draw(caller, uniforms, matrix, material);
       }
       
