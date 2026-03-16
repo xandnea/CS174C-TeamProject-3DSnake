@@ -125,6 +125,15 @@ const GameBase = defs.GameBase =
           color: color(1, 1, 1, 0.35)
         };
 
+        // Sun material
+        this.materials.sun = {
+          shader: phong,
+          ambient: 1.0,
+          diffusivity: 0.0,
+          specularity: 0.0,
+          color: color(1.0, 0.92, 0.55, 1)
+        };
+
         this.ball_location = vec3(1, 1, 1);
         this.ball_radius = 0.25;
 
@@ -259,6 +268,42 @@ const GameBase = defs.GameBase =
           { pos: vec3(-40, 21, 96), scale: 5.0, cluster_type: 0 },
           { pos: vec3(48, 23, 102), scale: 5.6, cluster_type: 2 }
         ];
+
+        // Sun settings
+        this.sun_center = vec3(0, 0, 0);
+        this.sun_distance = 40;
+        this.sun_height = 17;
+        this.sun_vertical_range = 6;
+        this.sun_radius = 3.8;
+        this.sun_speed = 0.0008;
+        this.sun_low_color = color(1.0, 0.55, 0.25, 1);
+        this.sun_high_color = color(1.0, 0.96, 0.82, 1);
+        this.fill_light_color = color(0.35, 0.42, 0.5, 1);
+        this.sun_position = vec4(0, this.sun_height, 0, 1.0);
+        this.sun_color = this.sun_high_color;
+      }
+
+      interpolate_color(c1, c2, t)
+      {
+        const clamped_t = Math.max(0, Math.min(1, t));
+        return color(
+          c1[0] + (c2[0] - c1[0]) * clamped_t,
+          c1[1] + (c2[1] - c1[1]) * clamped_t,
+          c1[2] + (c2[2] - c1[2]) * clamped_t,
+          c1[3] + (c2[3] - c1[3]) * clamped_t
+        );
+      }
+
+      draw_sun(caller, uniforms, sun_position)
+      {
+        const sun_transform =
+          Mat4.translation(sun_position[0], sun_position[1], sun_position[2])
+            .times(Mat4.scale(this.sun_radius, this.sun_radius, this.sun_radius));
+
+        this.shapes.ball.draw(caller, uniforms, sun_transform, {
+          ...this.materials.sun,
+          color: this.sun_color
+        });
       }
 
       draw_cloud_cluster(caller, uniforms, center, scale_factor, cluster_type, material)
@@ -392,8 +437,35 @@ const GameBase = defs.GameBase =
         // const light_position = Mat4.rotation( angle,   1,0,0 ).times( vec4( 0,-1,1,0 ) ); !!!
         // !!! Light changed here
         //const light_position = vec4(20 * Math.cos(angle), 20,  20 * Math.sin(angle), 1.0);
-        const light_position = vec4(0, 100, 0, 0);
-        this.uniforms.lights = [ defs.Phong_Shader.light_source( light_position, color( 1,1,1,1 ), 1000000 ) ];
+
+        const sun_angle = t * this.sun_speed;
+
+        const sun_x = this.sun_center[0] + this.sun_distance * Math.cos(sun_angle);
+        const sun_y = this.sun_height + this.sun_vertical_range * Math.sin(sun_angle);
+        const sun_z = this.sun_center[2] + this.sun_distance * Math.sin(sun_angle);
+
+        this.sun_position = vec4(sun_x, sun_y, sun_z, 1.0);
+
+        const min_sun_y = this.sun_height - this.sun_vertical_range;
+        const max_sun_y = this.sun_height + this.sun_vertical_range;
+        const sun_height_t = (sun_y - min_sun_y) / (max_sun_y - min_sun_y);
+
+        this.sun_color = this.interpolate_color(this.sun_low_color, this.sun_high_color, sun_height_t);
+
+        const fill_pos = vec4(-40, 30, -25, 1.0);
+
+        this.uniforms.lights = [
+          defs.Phong_Shader.light_source(
+            this.sun_position,
+            this.sun_color,
+            200000
+          ),
+          defs.Phong_Shader.light_source(
+            fill_pos,
+            this.fill_light_color,
+            12000
+          )
+        ];
 
         // draw axis arrows.
         //this.shapes.axis.draw(caller, this.uniforms, Mat4.identity(), this.materials.rgb);
@@ -417,6 +489,13 @@ export class Game extends GameBase
 
     // Call the setup code that we left inside the base class:
     super.render_animation( caller );
+
+    // Draw visible sun
+    this.draw_sun(
+      caller,
+      this.uniforms,
+      vec3(this.sun_position[0], this.sun_position[1], this.sun_position[2])
+    );
 
     // Animation time: 
       // animation_time is the total time since the program started, in milliseconds

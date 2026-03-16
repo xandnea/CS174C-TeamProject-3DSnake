@@ -34,12 +34,12 @@ export const Board = class Board {
     this._generate_rocks();
 
     // Bigger scenery area outside the board
-    this.scenery_extra_cells = 10;
+    this.scenery_extra_cells = 15;
     this.scenery_grid_size = this.grid_size + this.scenery_extra_cells * 2;
     this.scenery_half = (this.scenery_grid_size * this.cell_size) / 2;
 
     this._trees = [];
-    this.tree_spawn_chance = 0.22;
+    this.tree_spawn_chance = 0.18;
     this.tree_margin_from_rocks = 4.0;
     this.tree_min_scale = 1;
     this.tree_max_scale = 2;
