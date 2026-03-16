@@ -1,4 +1,4 @@
-# Blender 5.0.1 MTL File: 'apple.blend'
+# Blender 5.0.1 MTL File: 'snake_head_start.blend'
 # www.blender.org
 
 newmtl Material
@@ -9,4 +9,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd apple_texture.png
+map_Kd C:/Users/Nathan Chen/Documents/GitHub/CS174C-TeamProject-3DSnake/assets/snake/snake_head_start_texture.png
