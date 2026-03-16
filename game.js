@@ -533,6 +533,9 @@ export class Game extends GameBase
 
     document.getElementById("resume-button").onclick = () => { this.paused = false; };
 
+    document.getElementById("current-score").textContent = this.score;
+    document.getElementById("current-speed").textContent = this.snake.speed;
+
     // Snake:
     if (!this.game_over && !this.paused) {
       while (this.accumulator < dt_frame) {
