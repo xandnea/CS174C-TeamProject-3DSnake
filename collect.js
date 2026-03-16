@@ -6,6 +6,7 @@ export const Collectible = class Collectible {
         this.instances = []; // Collectible instances stored as vec3's
         this.r = r;
         this.size = r ** 2; // Store radius squared to reduce computation in update()
+        this.angle = 0;
         this.score = 0;
         this.x_bounds = x_bound; // Grid boundary in form [x_lower, x_upper]
         this.z_bounds = z_bound;
@@ -68,11 +69,12 @@ export const Collectible = class Collectible {
         for (let i of this.instances) {
             i[1] = y;
         }
+        this.angle += 0.02;
     }
 
     draw(webgl_manager, uniforms, shapes, materials) {
         for (const i of this.instances) {
-            const collect_transform = Mat4.translation(i[0], i[1], i[2]).times(Mat4.scale(this.r, this.r, this.r));
+            const collect_transform = Mat4.translation(i[0], i[1], i[2]).times(Mat4.scale(this.r, this.r, this.r)).times(Mat4.rotation(this.angle, 0, 1, 0));
             // shapes.ball.draw(webgl_manager, uniforms, collect_transform, { ...materials.collect, color: color(0.78, 0.31, 0.26, 1)});
             shapes.apple.draw(webgl_manager, uniforms, collect_transform, materials.collect);
         }   
@@ -86,7 +88,7 @@ export const Collectible = class Collectible {
 class Sparkle {
     constructor(x, y, z) {
         this.die = false;
-        const size = 60; // Number of particles. More would look better but I'm worried about performance
+        const size = 80; // Number of particles. More would look better but I'm worried about performance
         this.r = 0.05; // This is probably huge
         this.lifetime = 1500; // Milliseconds
         this.createTime = Date.now();
@@ -95,7 +97,7 @@ class Sparkle {
         this.velocities = [];
         for (let i = 0; i < size; i++) {
             this.positions[i] = vec3(x, y, z);
-            this.velocities[i] = vec3(Math.random() * 0.1 - 0.05, Math.random() * 0.1, Math.random() * 0.1 - 0.05);
+            this.velocities[i] = vec3(Math.random() * 0.1 - 0.04, Math.random() * 0.1, Math.random() * 0.1 - 0.04);
             // Probably want to modify these but we'll see
         }
     }
