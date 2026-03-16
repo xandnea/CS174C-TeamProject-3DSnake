@@ -8,7 +8,7 @@
             padding: 0;
             background: #111;
             overflow-x: hidden;
-            overflow-y: auto; /* Enable the scrollbar */
+            overflow-y: auto; 
         }
 
         /* Canvas (game): "Live Wallpaper" mode */
@@ -18,7 +18,7 @@
             left: 0 !important;
             width: 100vw !important;
             height: 100vh !important;
-            z-index: -1 !important; /* Sit BEHIND everything */
+            z-index: -1 !important; 
             display: block !important;
             object-fit: cover;
         }
@@ -39,18 +39,12 @@
             font-size: 32px; 
             font-weight: bold; 
             color: white; 
-            /* text-shadow: 2px 2px 4px black; */
             border: 2px dashed rgb(255, 255, 255);
             border-top: 8px solid rgb(43, 255, 0);
             border-radius: 30px;
-            /* border-width: 3px;
-            border-radius: 30px;
-            border-color: rgb(43, 255, 0);
-            border-style: solid; */
             background-color: rgba(150, 150, 150, 0.5);
             display: inline-block;
             padding: 10px 20px;
-            /* box-shadow: 0px -10px 10px rgb(255, 255, 255); */
         }
 
         @keyframes border-pulse {
@@ -104,9 +98,9 @@
             backdrop-filter: blur(4px);
         }
 
-        /* The "Pop" effect */
+        /* Pop effect */
         .key.active {
-            background: rgba(0, 255, 127, 0.3); /* Emerald glow */
+            background: rgba(0, 255, 127, 0.3); 
             border-color: #00ff7f;
             color: #fff;
             transform: scale(1.1);
@@ -122,7 +116,6 @@
             left: 50%;
             transform: translate(-50%, -50%);
 
-            /* Asthetic from Score Box */
             background-color: rgba(30, 30, 30, 0.85);
             border: 3px dashed white;
             border-top: 10px solid rgb(255, 55, 0);
@@ -131,13 +124,13 @@
             padding: 60px 80px;
             text-align: center;
             z-index: 200;
-            display: none; /* hidden by default */
+            display: none; 
             min-width: 400px;
         }
 
         #game-over-text, #pause-text {
             font-size: 60px;
-            margin: 0 0 40px 0; /* Pushes text UP and creates space below */
+            margin: 0 0 40px 0; 
             color: white;
             font-weight: bold;
         }
@@ -180,14 +173,14 @@
         #game-viewport-area {
             height: 100vh;
             width: 100%;
-            pointer-events: none; /* Let clicks pass through to the game */
+            pointer-events: none; 
         }
 
         /* Controls: slides up from the bottom */
         #main-section {
             position: relative;
             z-index: 10;
-            background: #222; /* Solid color to hide the game when scrolling */
+            background: #222;
             color: white;
             min-height: 100vh;
             box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
