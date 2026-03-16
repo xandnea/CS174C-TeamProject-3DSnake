@@ -43,3 +43,4 @@ Implemented in `collect.js` as an array of positions and velocities in a ‘Spar
 - **Mechanics:** Additional gameplay mechanics could be added to increase the complexity of the game, such as special collectibles which modify speed or invert controls.
 - **Artificial intelligence:** The game could be modified to remove player control, with an algorithm instead controlling the snake’s behavior to simulate movement towards rewards and collision avoidance. Alternatively, such a life simulation algorithm could be implemented in a non-player controlled entity which exists as an additional challenge within the game.
 - **Models:** The current model textures consist of a simple 2D texture image projected on a 3D model. More graphical enhancements could be made through displacement maps or increased model resolution, such as adding scales to the snake body, creating leaves for the tree models and indentations in the tree bark, and creating a rough surface for the rocks.
+
