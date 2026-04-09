@@ -97,14 +97,14 @@ const GameBase = defs.GameBase =
         this.materials.particle = { shader: phong, ambient: 0.8, diffusivity: 0.4,  specularity: 0.1, color: color(0, 0, 1, 1) };
         this.materials.spring = { shader: phong, ambient: 0.6, diffusivity: 0.4,  specularity: 0.1, color: color(0.5, 0.5, 0.5, 1) };
         this.materials.grass = { shader: phong, ambient: 0.6, diffusivity: 0.5, specularity: 0.0, color: color(.9,.5,.9,1) };
-        this.materials.collect = {shader: tex_phong, ambient: 0.8, diffusivity: 0.8, specularity: 0.4, texture: new Texture("/assets/apple_texture.png")};
+        this.materials.collect = {shader: tex_phong, ambient: 0.8, diffusivity: 0.8, specularity: 0.4, texture: new Texture("assets/apple_texture.png")};
         this.materials.tree1 = { shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("assets/obstacles/tree1_texture.png") };
         this.materials.rock = { shader: phong, ambient: 0.4, diffusivity: 0.9, specularity: 0.1, color: color(0.5, 0.5, 0.5, 1) };
-        this.materials.snake_head_start = {shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("/assets/snake/snake_head_start_texture.png")};
-        this.materials.snake_head_end = {shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("/assets/snake/snake_head_end_texture.png")};
-        this.materials.snake_body = {shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("/assets/snake/snake_body_texture.png")};
-        this.materials.snake_tail_start = {shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("/assets/snake/snake_tail_start_texture.png")};
-        this.materials.snake_tail_end = {shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("/assets/snake/snake_tail_end_texture.png")};
+        this.materials.snake_head_start = {shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("assets/snake/snake_head_start_texture.png")};
+        this.materials.snake_head_end = {shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("assets/snake/snake_head_end_texture.png")};
+        this.materials.snake_body = {shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("assets/snake/snake_body_texture.png")};
+        this.materials.snake_tail_start = {shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("assets/snake/snake_tail_start_texture.png")};
+        this.materials.snake_tail_end = {shader: tex_phong, ambient: 1, diffusivity: 0.5, specularity: 0.5, texture: new Texture("assets/snake/snake_tail_end_texture.png")};
         // Cloud material
         this.materials.cloud = {
           shader: phong,
